@@ -30,10 +30,7 @@ static auto requiredLayoutAttributes(LayoutAttribute attr) {
 }
 
 Widget::Widget(Widget* parent) :
-    _parent{parent},
-    _children{},
-    _constraints{},
-    _values{} {
+    _parent{parent} {
     setFocused(parent != nullptr && parent->focused());
     setVisible(parent == nullptr || parent->visible());
 }
@@ -51,6 +48,9 @@ auto Widget::performUpdate() -> void {// NOLINT
     if (!_rendered) {
         willAppear();
         _rendered = true;
+    } else if (!visible()) {
+        willDisappear();
+        _rendered = false;
     }
 
     for (auto& child : _children) {
@@ -87,6 +87,13 @@ auto Widget::addLayoutConstraint(LayoutConstraint&& constraint) -> void {
     _layoutDirty = true;
 }
 
+auto Widget::addLayoutConstraints(std::vector<LayoutConstraint>&& constraints) -> void {
+    for (auto& constraint : constraints) {
+        _constraints.push_back(constraint);
+    }
+    _layoutDirty = true;
+}
+
 auto Widget::queueRecalculateLayoutConstraints() -> void {
     _layoutDirty = true;
     for (auto& child : _children) {
@@ -117,6 +124,10 @@ auto Widget::setVisible(bool visible) -> void {// NOLINT
     for (const auto& child : _children) {
         child->setVisible(visible);
     }
+}
+
+auto Widget::clearActions() -> void {
+    _actions.clear();
 }
 
 auto Widget::parent() -> Widget* {
@@ -241,10 +252,10 @@ auto Widget::actions() const -> const std::vector<std::unique_ptr<Action>>& {
 auto Widget::recalculateLayoutAttributeValues() -> void {
     for (auto& c : _constraints) {
         if (!c.xWidget) {
-            setLayoutAttributeValue(c.yAttr, {static_cast<int>(c.constantFn ? c.constantFn() : c.constant), LayoutAttributeValuePriority::Explicit});
+            setLayoutAttributeValue(c.yAttr, {static_cast<int>(c.constantFn ? c.constantFn(this) : c.constant), LayoutAttributeValuePriority::Explicit});
         } else if (const auto val = c.xWidget->layoutAttributeValue(c.xAttr); val.has_value()) {
             if (c.constantFnAttr) {
-                setLayoutAttributeValue(c.yAttr, {static_cast<int>(c.constantFnAttr(val.value().result)), LayoutAttributeValuePriority::Explicit});
+                setLayoutAttributeValue(c.yAttr, {static_cast<int>(c.constantFnAttr(this, c.xWidget, val.value().result)), LayoutAttributeValuePriority::Explicit});
             } else {
                 setLayoutAttributeValue(c.yAttr, {static_cast<int>(val.value().result * c.multiplier + c.constant), LayoutAttributeValuePriority::Explicit});
             }
@@ -286,6 +297,9 @@ auto Widget::childAdded() -> void {
 }
 
 auto Widget::willAppear() -> void {
+}
+
+auto Widget::willDisappear() -> void {
 }
 
 auto Widget::clear() const noexcept -> void {

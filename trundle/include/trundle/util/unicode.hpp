@@ -9,43 +9,44 @@
 namespace trundle {
 
 struct String {
-    static const std::string Space;
+    static constexpr std::wstring Space = L" ";
 };
 
 struct Unicode {
-    static const std::string Block;
-    static const std::string BlockLeft;
-    static const std::string BlockRight;
-    static const std::string BlockTop;
-    static const std::string BlockBottom;
-    static const std::string BlockMediumShade;
-    static const std::string BlockLightShade;
-    static const std::string Square;
-    static const std::string LineVert;
-    static const std::string LineHoriz;
-    static const std::string LineHorizDouble;
-    static const std::string CornerTopRight;
-    static const std::string CornerTopRightHorizDouble;
-    static const std::string CornerTopLeft;
-    static const std::string CornerTopLeftHorizDouble;
-    static const std::string CornerBottomRight;
-    static const std::string CornerBottomLeft;
-    static const std::string ArrowRightDouble;
-    static const std::string Percent;
-    static const std::string Option;
-    static const std::string ArrowUp;
-    static const std::string ArrowDown;
-    static const std::string ArrowUpOutline;
-    static const std::string ArrowLeft;
-    static const std::string ArrowRight;
-    static const std::string LineHorizDown;
-    static const std::string LineHorizUp;
-    static const std::string LineForwardSlash;
-    static const std::string LineBackSlash;
-    static const std::string LineVertLeft;
-    static const std::string LineVertRight;
-    static const std::string Return;
-    static const std::string ArrowRightVertLine;
+    static constexpr std::wstring Block = L"█";
+    static constexpr std::wstring BlockLeft = L"▌";
+    static constexpr std::wstring BlockRight = L"▐";
+    static constexpr std::wstring BlockTop = L"▀";
+    static constexpr std::wstring BlockBottom = L"▄";
+    static constexpr std::wstring BlockMediumShade = L"▒";
+    static constexpr std::wstring BlockLightShade = L"░";
+    static constexpr std::wstring Square = L"■";
+    static constexpr std::wstring LineVert = L"│";
+    static constexpr std::wstring LineHoriz = L"─";
+    static constexpr std::wstring LineHorizDouble = L"═";
+    static constexpr std::wstring CornerTopRight = L"┐";
+    static constexpr std::wstring CornerTopRightHorizDouble = L"╕";
+    static constexpr std::wstring CornerTopLeft = L"┌";
+    static constexpr std::wstring CornerTopLeftHorizDouble = L"╒";
+    static constexpr std::wstring CornerBottomRight = L"┘";
+    static constexpr std::wstring CornerBottomLeft = L"└";
+    static constexpr std::wstring ArrowRightDouble = L"»";
+    static constexpr std::wstring Percent = L"%%";
+    static constexpr std::wstring Option = L"⌥";
+    static constexpr std::wstring ArrowUp = L"↑";
+    static constexpr std::wstring ArrowDown = L"↓";
+    static constexpr std::wstring ArrowUpOutline = L"⇧";
+    static constexpr std::wstring ArrowLeft = L"←";
+    static constexpr std::wstring ArrowRight = L"→";
+    static constexpr std::wstring LineHorizDown = L"┬";
+    static constexpr std::wstring LineHorizUp = L"┴";
+    static constexpr std::wstring LineForwardSlash = L"╱";
+    static constexpr std::wstring LineBackSlash = L"╲";
+    static constexpr std::wstring LineVertLeft = L"┤";
+    static constexpr std::wstring LineVertRight = L"├";
+    static constexpr std::wstring TriangleRight = L"⏵";
+    static constexpr std::wstring Return = L"⏎";
+    static constexpr std::wstring ArrowRightVertLine = L"⇥";
 };
 
 }

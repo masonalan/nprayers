@@ -20,6 +20,7 @@ struct Trundle {
 
     static auto print(const std::string& str) -> void;
     static auto print(std::string_view str) -> void;
+    static auto print(std::wstring_view str) -> void;
     static auto moveCursor(glm::ivec2 pos) -> void;
     static auto setColorPair(ColorPair pair) -> void;
     static auto setDefaultColorPair(ColorPair pair) -> void;

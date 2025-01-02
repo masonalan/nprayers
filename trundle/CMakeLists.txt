@@ -39,13 +39,17 @@ add_library(
         src/util/action.cpp
         include/trundle/model/list_model.hpp
         src/model/list_model.cpp
-        include/trundle/controller/window_controller.hpp
-        include/trundle/controller/list_controller.hpp
-        src/controller/window_controller.cpp
-        include/trundle/controller/controller.hpp
-        src/controller/list_controller.cpp
-        include/trundle/controller/text_editor_controller.hpp
-        src/controller/text_editor_controller.cpp
+        include/trundle/view/list_view.hpp
+        src/view/list_view.cpp
+        include/trundle/view/text_view.hpp
+        src/view/text_view.cpp
+        include/trundle/view/prompt_view.hpp
+        src/view/prompt_view.cpp
+        include/trundle/widget/label_widget.hpp
+        src/widget/label_widget.cpp
+        include/trundle/util/text.hpp
+        src/util/text.cpp
+        include/trundle/util/enum_math.hpp
 )
 
 target_include_directories(trundle PUBLIC include)

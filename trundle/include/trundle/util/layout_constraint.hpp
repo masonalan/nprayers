@@ -12,6 +12,9 @@ namespace trundle {
 
 struct Widget;
 
+using ConstantValueCallback = std::function<double(Widget*)>;
+using ConstantValueWidgetCallback = std::function<double(Widget*, Widget*, double)>;
+
 struct LayoutConstraint {
     LayoutConstraint(LayoutAttribute yAttr,
                      Widget* xAttr,
@@ -22,22 +25,22 @@ struct LayoutConstraint {
     LayoutConstraint(LayoutAttribute yAttr,
                      Widget* xAttr,
                      LayoutAttribute xAtr,
-                     std::function<double(double)>,
+                     ConstantValueWidgetCallback fn,
                      double multiplier = 1.0);
 
     LayoutConstraint(LayoutAttribute yAttr,
                      double constant);
 
     LayoutConstraint(LayoutAttribute yAttr,
-                     std::function<double()> constantFn);
+                     ConstantValueCallback constantFn);
 
     Widget* xWidget{};
     LayoutAttribute xAttr;
     LayoutAttribute yAttr;
     double multiplier{};
     double constant{};
-    std::function<double()> constantFn;
-    std::function<double(double)> constantFnAttr;
+    ConstantValueCallback constantFn;
+    ConstantValueWidgetCallback constantFnAttr;
 };
 
 }

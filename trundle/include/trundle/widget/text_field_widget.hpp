@@ -6,6 +6,8 @@
 
 #include <trundle/widget/widget.hpp>
 
+#include <trundle/util/text.hpp>
+
 #include <glm/glm.hpp>
 
 #include <string>
@@ -14,27 +16,32 @@
 
 namespace trundle {
 
-struct TextFieldWidget : public Widget {
-    TextFieldWidget(Widget* parent = nullptr);
+struct TextFieldWidget;
 
-    auto setText(const std::string& text) -> void;
+using TextChangedCallback = std::function<void(TextFieldWidget*)>;
+
+struct TextFieldWidget : Widget {
+    explicit TextFieldWidget(Widget* parent = nullptr);
+
+    auto setText(const std::wstring& text) -> void;
+    auto setTextChanged(TextChangedCallback&& callback) -> void;
+    auto setCursor(WrappingTextIterator cursor) -> void;
+
+    [[nodiscard]] auto text() const -> const std::wstring&;
 
 protected:
     auto update() -> void override;
     auto render() const noexcept -> void override;
     auto willAppear() -> void override;
-//    auto keyPressed() -> void override;
 
 private:
     auto updateTextLayout() -> void;
-    auto moveCursor(glm::ivec2 delta) -> void;
+    auto moveCursor(Direction direction) -> void;
 
-    [[nodiscard]] auto charAtCursorPosition() const noexcept -> char;
-    [[nodiscard]] auto iteratorAtCursorPosition() -> std::string::iterator;
-
-    std::string _text{};
     glm::ivec2 _cursorPos{};
-    std::vector<std::string_view> _rows{};
+    WrappingTextIterator _cursor{};
+    WrappingText _text{};
+    TextChangedCallback _textChanged{nullptr};
 };
 
 }

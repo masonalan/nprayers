@@ -15,62 +15,82 @@ namespace trundle {
 
 TextFieldWidget::TextFieldWidget(trundle::Widget* parent) :
     Widget{parent} {
-    addAction(Key::Left, "Left", [this](auto _) {
-        moveCursor({-1, 0});
-    });
-    addAction(Key::Right, "Right", [this](auto _) {
-        moveCursor({1, 0});
-    });
-    addAction(Key::Up, "Up", [this](auto _) {
-        moveCursor({0, -1});
-    });
-    addAction(Key::Down, "Down", [this](auto _) {
-        moveCursor({0, 1});
-    });
+    _cursor = _text.begin();
 }
 
-auto TextFieldWidget::setText(const std::string& text) -> void {
+auto TextFieldWidget::setText(const std::wstring& text) -> void {
     clear();
-    _text = text;
+    _text.setText(text);
+    _cursor = _text.begin();
     updateTextLayout();
 }
 
+auto TextFieldWidget::setTextChanged(TextChangedCallback&& callback) -> void {
+    _textChanged = callback;
+}
+
+auto TextFieldWidget::setCursor(WrappingTextIterator cursor) -> void {
+    _cursor = cursor;
+    updateTextLayout();
+}
+
+auto TextFieldWidget::text() const -> const std::wstring& {
+    return _text.text();
+}
+
 auto TextFieldWidget::update() -> void {
-    // TODO: this needs to be rethought but this is going very well
     if (focused()) {
-        if (Keyboard::currKey() == Key::Delete) {
-            _text.erase(std::prev(iteratorAtCursorPosition()));
-            updateTextLayout();
-            moveCursor({-1, 0});
-        } else if (Keyboard::currKey() == Key::Enter) {
-            _text.insert(iteratorAtCursorPosition(), '\n');
-            updateTextLayout();
-            moveCursor({1, 0});
-        } else {
-            const auto key = Keyboard::currChar();
-            if (key >= 32 && key <= 127) {
-                _text.insert(iteratorAtCursorPosition(), key);
+        switch (Keyboard::currKey()) {
+        case Key::Left:
+            moveCursor(Direction::Left);
+            break;
+        case Key::Right:
+            moveCursor(Direction::Right);
+            break;
+        case Key::Up:
+            moveCursor(Direction::Up);
+            break;
+        case Key::Down:
+            moveCursor(Direction::Down);
+            break;
+        case Key::Delete:
+            if (_cursor != _text.begin()) {
+                _cursor = _text.erase(std::prev(_cursor));
                 updateTextLayout();
-                moveCursor({1, 0});
             }
+            break;
+        case Key::Enter:
+            _cursor = _text.insert(_cursor, '\n');
+            updateTextLayout();
+            moveCursor(Direction::Down);
+            break;
+        default:
+            if (const auto key = Keyboard::currChar(); key >= 32 && key <= 127) {
+                _cursor = _text.insert(_cursor, key);
+                updateTextLayout();
+                moveCursor(Direction::Right);
+
+                if (_textChanged) {
+                    _textChanged(this);
+                }
+            }
+            break;
         }
     }
 }
 
 auto TextFieldWidget::render() const noexcept -> void {
-    auto buffer = std::string{};
-    auto p = glm::ivec2{pos().x + 1, pos().y + 1};
-    auto s = glm::ivec2{size().x - 2, size().y - 2};
-
+    const auto p = glm::ivec2{pos().x, pos().y};
     auto linePos = glm::ivec2{0, 0};
 
-    for (const auto& rowStr : _rows) {
+    for (const auto& rowStr : _text.rows()) {
         Trundle::moveCursor(p + linePos);
         Trundle::print(rowStr);
+        Trundle::print(String::Space);
         ++linePos.y;
     }
 
-    const auto ch = charAtCursorPosition();
+    const auto ch = WrappingText::printableChar(*_cursor);
 
     Trundle::moveCursor(p + _cursorPos);
     Trundle::setColorPair(Trundle::highlightColorPair());
@@ -79,6 +99,7 @@ auto TextFieldWidget::render() const noexcept -> void {
 }
 
 auto TextFieldWidget::willAppear() -> void {
+    _text.setBounds({size().x - 1, size().y});
     updateTextLayout();
 }
 
@@ -88,92 +109,16 @@ auto TextFieldWidget::updateTextLayout() -> void {
     }
 
     clear();
-    _rows.clear();
-
-    auto row = 0;
-    auto col = 0;
-    auto buffer = std::string{};
-    auto p = glm::ivec2{pos().x + 1, pos().y + 1};
-    auto s = glm::ivec2{size().x - 2, size().y - 2};
-    auto numChars = 0;
-    auto begin = _text.begin();
-    auto lastSpace = _text.begin();
-
-    auto nextWord = [&lastSpace, &numChars](auto it) {
-        lastSpace = it;
-        numChars = 0;
-    };
-
-    auto newLine = [this, &begin, &lastSpace, &col, &row]() {
-        _rows.emplace_back(begin, lastSpace);
-        begin = std::next(lastSpace);
-        col = 0;
-        ++row;
-    };
-
-    for (auto it = _text.begin(); it != _text.end(); ++it) {
-        const auto ch = *it;
-        if (ch == ' ') {
-            if (col + numChars > s.x) {
-                newLine();
-            }
-            col += numChars;
-            if (col < s.x) {
-                ++col;
-            }
-            nextWord(it);
-        } else if (ch == '\n') {
-            nextWord(it);
-            newLine();
-        } else {
-            ++numChars;
-            if (numChars > s.x) {
-                nextWord(it);
-                newLine();
-            }
-        }
-    }
-
-    nextWord(_text.end());
-    newLine();
+    _cursorPos = _text.posAtIterator(_cursor);
 }
 
-auto TextFieldWidget::moveCursor(glm::ivec2 delta) -> void {
-    if (charAtCursorPosition() == char{}) {
-        clear();
-    }
-    const auto newPos = _cursorPos + delta;
-    if (newPos.x > static_cast<int>(_rows[newPos.y].length())) {
+auto TextFieldWidget::moveCursor(Direction direction) -> void {
+    _cursor = _text.iteratorRelativeToIterator(_cursor, direction);
+    _cursorPos = _text.posAtIterator(_cursor);
 
-    } else if (newPos.x < 0) {
-        moveCursor({0, -1});
-    } else {
-        _cursorPos = {std::max(std::min(newPos.x, static_cast<int>(_rows[newPos.y].length()) - 1), 0),
-                      std::max(std::min(newPos.y, static_cast<int>(_rows.size()) - 1), 0)};
+    if (direction == Direction::Left || direction == Direction::Right) {
+        _text.setPreferredX(_cursorPos.x);
     }
-}
-
-auto TextFieldWidget::charAtCursorPosition() const noexcept -> char {
-    if (_rows.size() <= _cursorPos.y) {
-        return char{};
-    }
-    const auto& row = _rows[_cursorPos.y];
-    if (row.length() <= _cursorPos.x) {
-        return char{};
-    }
-    return row.at(_cursorPos.x);
-}
-
-auto TextFieldWidget::iteratorAtCursorPosition() -> std::string::iterator {
-    if (_text.empty()) {
-        return _text.end();
-    }
-    auto idx = 0;
-    for (auto row = 0; row < _cursorPos.y; ++row) {
-        idx += static_cast<int>(_rows.at(row).length()) + 1;
-    }
-    idx += _cursorPos.x;
-    return _text.begin() + idx;
 }
 
 }

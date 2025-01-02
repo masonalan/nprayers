@@ -6,7 +6,11 @@ set(CMAKE_CXX_STANDARD 20)
 add_subdirectory(trundle)
 
 add_executable(trundle-examples main.cpp
-        giants_players.cpp
-        giants_players.hpp)
+        examples/simple-text-editor/simple_text_editor.cpp
+        examples/simple-text-editor/simple_text_editor.hpp
+        examples/simple-text-editor/player_list_model.cpp
+        examples/simple-text-editor/player_list_model.hpp
+        examples/simple-text-editor/player.cpp
+        examples/simple-text-editor/player.hpp)
 
 target_link_libraries(trundle-examples trundle)

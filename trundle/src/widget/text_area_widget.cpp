@@ -26,7 +26,7 @@ auto TextAreaWidget::render() const noexcept -> void {
             Trundle::moveCursor({pos().x + col, pos().y + row});
             Trundle::print(buffer);
             Trundle::print(String::Space);
-            col += buffer.size() + 1;
+            col += static_cast<int>(buffer.size()) + 1;
             buffer.clear();
         } else if (ch == '\n') {
             Trundle::moveCursor({pos().x + col, pos().y + row});

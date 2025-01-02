@@ -24,7 +24,7 @@ LayoutConstraint::LayoutConstraint(LayoutAttribute yAttr,
 LayoutConstraint::LayoutConstraint(LayoutAttribute yAttr,
                                    Widget* xWidget,
                                    LayoutAttribute xAttr,
-                                   std::function<double(double)> constantFnAttr,
+                                   ConstantValueWidgetCallback constantFnAttr,
                                    double multiplier) :
     yAttr{yAttr},
     constantFnAttr{std::move(constantFnAttr)},
@@ -47,7 +47,7 @@ LayoutConstraint::LayoutConstraint(LayoutAttribute yAttr,
 }
 
 LayoutConstraint::LayoutConstraint(LayoutAttribute yAttr,
-                                   std::function<double()> constantFn) :
+                                   ConstantValueCallback constantFn) :
     yAttr{yAttr},
     constant{},
     xWidget{nullptr},

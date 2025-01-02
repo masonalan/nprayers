@@ -6,11 +6,14 @@
 
 #include <trundle/util/color_pair.hpp>
 
+#define NCURSES_WIDECHAR 1
+#define _XOPEN_SOURCE_EXTENDED//NOLINT
+#define _XOPEN_SOURCE 500     //NOLINT
+
 #include <locale>
 #include <ncurses.h>
 
 namespace trundle {
-
 struct TrundleData {
     ColorPair defaultColorPair = ColorPair::Default;
     ColorPair focusColorPair = ColorPair::GreenOnDefault;
@@ -75,6 +78,10 @@ auto Trundle::print(std::string_view str) -> void {
     addnstr(str.data(), str.length());
 }
 
+auto Trundle::print(std::wstring_view str) -> void {
+    addnwstr(str.data(), str.length());
+}
+
 auto Trundle::moveCursor(glm::ivec2 pos) -> void {
     move(pos.y, pos.x);
 }
@@ -83,15 +90,15 @@ auto Trundle::setColorPair(ColorPair pair) -> void {
     attron(COLOR_PAIR(static_cast<std::underlying_type_t<ColorPair>>(pair)));
 }
 
-auto Trundle::setDefaultColorPair(trundle::ColorPair pair) -> void {
+auto Trundle::setDefaultColorPair(ColorPair pair) -> void {
     _d.defaultColorPair = pair;
 }
 
-auto Trundle::setFocusColorPair(trundle::ColorPair pair) -> void {
+auto Trundle::setFocusColorPair(ColorPair pair) -> void {
     _d.focusColorPair = pair;
 }
 
-auto Trundle::setHighlightColorPair(trundle::ColorPair pair) -> void {
+auto Trundle::setHighlightColorPair(ColorPair pair) -> void {
     _d.highlightColorPair = pair;
 }
 
@@ -105,6 +112,12 @@ auto Trundle::focusColorPair() -> ColorPair {
 
 auto Trundle::highlightColorPair() -> ColorPair {
     return _d.highlightColorPair;
+}
+
+auto Trundle::windowSize() -> glm::ivec2 {
+    auto x = int{}, y = int{};
+    getmaxyx(stdscr, y, x);
+    return glm::ivec2{x, y};
 }
 
 auto Trundle::currChar() -> int {

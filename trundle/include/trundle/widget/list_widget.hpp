@@ -11,6 +11,9 @@
 #include <vector>
 
 namespace trundle {
+struct ListWidget;
+
+using SelectionChangedCallback = std::function<void(const ListWidget*, int, int)>;
 
 struct ListWidget : public Widget {
     explicit ListWidget(Widget* parent);
@@ -18,9 +21,7 @@ struct ListWidget : public Widget {
     auto addItem(std::string item) -> void;
     auto selectRow(int row) -> void;
 
-    auto setAddCallback(std::function<void(ListWidget*, int)>&& fn) -> void;
-    auto setRemoveCallback(std::function<void(ListWidget*, int)>&& fn) -> void;
-    auto setSelectionChangedCallback(std::function<void(const ListWidget*, int)>&& fn) -> void;
+    auto setOnSelectionChanged(SelectionChangedCallback&& fn) -> void;
 
     [[nodiscard]] auto selectedRow() const -> int;
     [[nodiscard]] auto rowCount() const -> int;
@@ -32,18 +33,15 @@ struct ListWidget : public Widget {
     }
 
 protected:
+    auto update() -> void override;
     auto render() const noexcept -> void override;
-    auto focusChanged() -> void override;
 
 private:
     std::unique_ptr<ListModel> _model{nullptr};
     std::vector<std::string> _items{};
     int _selectedRow{};
 
-    std::function<void(ListWidget*, int)> _addCallback{nullptr};
-    std::function<void(ListWidget*, int)> _removeCallback{nullptr};
-    std::function<void(const ListWidget*, int)> _selectionChangedCallback{nullptr};
-
+    SelectionChangedCallback _selectionChangedCallback{nullptr};
 };
 
 }

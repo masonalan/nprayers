@@ -11,8 +11,8 @@ namespace trundle {
 struct ListModel {
     virtual ~ListModel();
 
-    virtual auto rowCount() const -> unsigned int = 0;
-    virtual auto rowText(unsigned int row) const -> const std::string& = 0;
+    [[nodiscard]] virtual auto rowCount() const -> unsigned int = 0;
+    [[nodiscard]] virtual auto rowText(unsigned int row) const -> const std::wstring& = 0;
 };
 
 }

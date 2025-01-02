@@ -31,6 +31,23 @@ struct KeyboardData {
 static auto _d = KeyboardData{};
 
 auto Keyboard::init() -> void {
+    _d.keyMap[Key::CtrlA] = {1};
+    _d.keyMap[Key::CtrlB] = {2};
+    _d.keyMap[Key::CtrlD] = {4};
+    _d.keyMap[Key::CtrlE] = {5};
+    _d.keyMap[Key::CtrlF] = {6};
+    _d.keyMap[Key::CtrlG] = {7};
+    _d.keyMap[Key::CtrlH] = {8};
+    _d.keyMap[Key::CtrlI] = {9};
+    _d.keyMap[Key::CtrlK] = {11};
+    _d.keyMap[Key::CtrlL] = {12};
+    _d.keyMap[Key::CtrlN] = {14};
+    _d.keyMap[Key::CtrlP] = {16};
+    _d.keyMap[Key::CtrlR] = {18};
+    _d.keyMap[Key::CtrlT] = {20};
+    _d.keyMap[Key::CtrlU] = {21};
+    _d.keyMap[Key::CtrlW] = {23};
+    _d.keyMap[Key::CtrlX] = {24};
     _d.keyMap[Key::Delete] = {127};
     _d.keyMap[Key::Down] = {27, 91, 66};
     _d.keyMap[Key::Enter] = {10};

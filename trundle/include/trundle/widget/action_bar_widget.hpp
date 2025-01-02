@@ -11,6 +11,8 @@
 
 namespace trundle {
 
+struct DividerWidget;
+
 struct ActionBarWidget : Widget {
     explicit ActionBarWidget(Widget* parent = nullptr);
 
@@ -24,6 +26,7 @@ protected:
     auto focusChanged() -> void override;
 
 private:
+    DividerWidget* _divider;
     std::vector<Action*> _displayActions{};
     int _rows{};
 };

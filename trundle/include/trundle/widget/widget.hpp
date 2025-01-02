@@ -9,7 +9,6 @@
 
 #include <glm/glm.hpp>
 
-#include <memory>
 #include <optional>
 #include <unordered_map>
 #include <vector>
@@ -17,20 +16,24 @@
 namespace trundle {
 
 struct Action;
+struct Widget;
 
-// Widget
 struct Widget {
     explicit Widget(Widget* parent = nullptr);
-    ~Widget();
+    virtual ~Widget();
 
     auto performUpdate() -> void;
     auto performRender() const -> void;
+    virtual auto clear() const noexcept -> void;
 
     auto addLayoutConstraint(LayoutConstraint&& constraint) -> void;
+    auto addLayoutConstraints(std::vector<LayoutConstraint>&& constraints) -> void;
     auto queueRecalculateLayoutConstraints() -> void;
 
     auto setFocused(bool focused) -> void;
     auto setVisible(bool visible) -> void;
+
+    auto clearActions() -> void;
 
     [[nodiscard]] auto parent() -> Widget*;
     [[nodiscard]] auto parent() const -> Widget*;
@@ -62,10 +65,11 @@ struct Widget {
 protected:
     virtual auto update() -> void;
     virtual auto render() const noexcept -> void;
-    virtual auto clear() const noexcept -> void;
+
     virtual auto focusChanged() -> void;
     virtual auto childAdded() -> void;
     virtual auto willAppear() -> void;
+    virtual auto willDisappear() -> void;
 
 private:
     auto setLayoutAttributeValue(LayoutAttribute attr, LayoutAttributeValue value) -> void;

@@ -8,8 +8,11 @@
 
 namespace trundle {
 
-struct WindowWidget : public FrameWidget {
+struct WindowWidget : FrameWidget {
     explicit WindowWidget(Widget* parent = nullptr);
+
+    auto setFocused(Widget* widget) -> void;
+    auto setFocusLocked(bool locked) -> void;
 
 protected:
     auto childAdded() -> void override;
@@ -17,6 +20,8 @@ protected:
 private:
     int _selectedWidget{};
     unsigned int _selectWidgetListener;
+    bool _focusLocked{false};
+    Widget* _focusedWidget{nullptr};
 };
 
 }
