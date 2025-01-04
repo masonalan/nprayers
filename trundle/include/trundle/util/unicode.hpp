@@ -30,6 +30,8 @@ struct Unicode {
     static constexpr std::wstring CornerTopLeftHorizDouble = L"╒";
     static constexpr std::wstring CornerBottomRight = L"┘";
     static constexpr std::wstring CornerBottomLeft = L"└";
+    static constexpr std::wstring FolderClosed = L"▣";
+    static constexpr std::wstring FolderOpened = L"□";
     static constexpr std::wstring ArrowRightDouble = L"»";
     static constexpr std::wstring Percent = L"%%";
     static constexpr std::wstring Option = L"⌥";
@@ -44,7 +46,9 @@ struct Unicode {
     static constexpr std::wstring LineBackSlash = L"╲";
     static constexpr std::wstring LineVertLeft = L"┤";
     static constexpr std::wstring LineVertRight = L"├";
+    static constexpr std::wstring TriangleDown = L"▼";
     static constexpr std::wstring TriangleRight = L"⏵";
+    static constexpr std::wstring TriangleUp = L"▲";
     static constexpr std::wstring Return = L"⏎";
     static constexpr std::wstring ArrowRightVertLine = L"⇥";
 };

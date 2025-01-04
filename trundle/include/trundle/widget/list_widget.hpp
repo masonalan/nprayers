@@ -11,6 +11,7 @@
 #include <vector>
 
 namespace trundle {
+
 struct ListWidget;
 
 using SelectionChangedCallback = std::function<void(const ListWidget*, int, int)>;

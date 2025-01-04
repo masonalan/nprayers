@@ -50,6 +50,12 @@ add_library(
         include/trundle/util/text.hpp
         src/util/text.cpp
         include/trundle/util/enum_math.hpp
+        include/trundle/widget/tree_widget.hpp
+        include/trundle/model/tree_model.hpp
+        src/widget/tree_widget.cpp
+        src/model/tree_model.cpp
+        include/trundle/widget/scroll_bar_widget.hpp
+        src/widget/scroll_bar_widget.cpp
 )
 
 target_include_directories(trundle PUBLIC include)

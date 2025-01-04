@@ -82,6 +82,15 @@ auto Trundle::print(std::wstring_view str) -> void {
     addnwstr(str.data(), str.length());
 }
 
+auto Trundle::print(std::wstring_view str, unsigned int maxChars) -> void {
+    if (str.length() > maxChars) {
+        addnwstr(str.data(), maxChars - 3);
+        printw("...");
+    } else {
+        Trundle::print(str);
+    }
+}
+
 auto Trundle::moveCursor(glm::ivec2 pos) -> void {
     move(pos.y, pos.x);
 }

@@ -1,4 +1,5 @@
-#include "examples/simple-text-editor/simple_text_editor.hpp"
+#include "examples/file_browser/file_browser.hpp"
+#include "examples/text_editor/simple_text_editor.hpp"
 
 #include <trundle/trundle.hpp>
 #include <trundle/util/keyboard.hpp>
@@ -36,7 +37,8 @@ auto main(int argc, char* argv[]) -> int {
         }
     }
 
-    examples::SimpleTextEditor::run();
+    //examples::SimpleTextEditor::run();
+    examples::FileBrowser::run();
 
     return 0;
 }
