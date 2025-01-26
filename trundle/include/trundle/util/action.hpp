@@ -13,10 +13,10 @@ namespace trundle {
 struct Widget;
 
 struct Action {
-    Action(Key key, std::string title, std::function<void(Widget*)>&& callback);
+    Action(Key key, std::wstring title, std::function<void(Widget*)>&& callback);
 
     Key key;
-    std::string title;
+    std::wstring title;
     std::function<void(Widget*)> callback;
 };
 

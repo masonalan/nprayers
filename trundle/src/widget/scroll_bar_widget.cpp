@@ -18,27 +18,31 @@ ScrollBarWidget::ScrollBarWidget(Widget* parent) :
     auto bottomLabel = addChild<LabelWidget>();
     bottomLabel->setText(Unicode::TriangleDown);
 
-    topLabel->addLayoutConstraints({{LayoutAttribute::Width, 1},
-                                    {LayoutAttribute::Height, 1},
-                                    {LayoutAttribute::Left, this, LayoutAttribute::Left},
-                                    {LayoutAttribute::Top, this, LayoutAttribute::Top}});
+    topLabel->addLayoutConstraints({{LayoutAttr::Width, 1},
+                                    {LayoutAttr::Height, 1},
+                                    {LayoutAttr::Left, this, LayoutAttr::Left},
+                                    {LayoutAttr::Top, this, LayoutAttr::Top}});
 
-    bottomLabel->addLayoutConstraints({{LayoutAttribute::Width, 1},
-                                       {LayoutAttribute::Height, 1},
-                                       {LayoutAttribute::Left, this, LayoutAttribute::Left},
-                                       {LayoutAttribute::Bottom, this, LayoutAttribute::Bottom}});
+    bottomLabel->addLayoutConstraints({{LayoutAttr::Width, 1},
+                                       {LayoutAttr::Height, 1},
+                                       {LayoutAttr::Left, this, LayoutAttr::Left},
+                                       {LayoutAttr::Bottom, this, LayoutAttr::Bottom}});
 
-    addLayoutConstraint({LayoutAttribute::Width, 1});
+    addLayoutConstraint({LayoutAttr::Width, 1});
 }
 
-auto ScrollBarWidget::setContentHeight(unsigned int height) -> void {
+auto ScrollBarWidget::setContentHeight(int height) -> void {
     _contentHeight = height;
     if (layoutResolved()) {
         setScrollOffset(_scrollOffset);
     }
 }
 
-auto ScrollBarWidget::setScrollOffset(unsigned int offset) -> void {
+auto ScrollBarWidget::setScrollOffset(int offset) -> void {
+    if (!layoutResolved()) {
+        return;
+    }
+
     const auto maxHeight = size().y - 2;
     const auto totalSteps = _contentHeight < size().y ? 0 : _contentHeight - size().y;
     const auto barHeight = totalSteps > maxHeight ? 1 : maxHeight - totalSteps;
@@ -49,7 +53,7 @@ auto ScrollBarWidget::setScrollOffset(unsigned int offset) -> void {
     setVisible(barHeight < maxHeight);
 }
 
-auto ScrollBarWidget::render() const noexcept -> void {
+auto ScrollBarWidget::render() const -> void {
     const auto maxHeight = size().y - 2;
     const auto totalSteps = _contentHeight < size().y ? 0 : _contentHeight - size().y;
     const auto barHeight = totalSteps > maxHeight ? 1 : maxHeight - totalSteps;

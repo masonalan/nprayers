@@ -6,7 +6,7 @@
 
 namespace examples {
 
-struct SimpleTextEditor {
+struct TextEditor {
     static auto run() -> void;
 };
 

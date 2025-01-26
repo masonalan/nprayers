@@ -29,7 +29,7 @@ struct Data {
     std::vector<Player> players{};
 };
 
-auto SimpleTextEditor::run() -> void {
+auto TextEditor::run() -> void {
     auto d = Data{};
     d.players.push_back(Player{L"Daniel Jones",
                                L"*Daniel Jones*\n\n"
@@ -43,16 +43,18 @@ auto SimpleTextEditor::run() -> void {
     Trundle::init();
     Keyboard::init();
 
-    auto window = WindowWidget{};
-    window.setTitle("New York Giants Power Rankings");
+    auto model = PlayerListModel{&d.players};
+
+    auto window = ScreenWidget{};
+    window.setTitle(L"New York Giants Power Rankings");
 
     auto listView = window.addChild<ListView>();
-    listView->setTitle("Players");
+    listView->setTitle(L"Players");
     listView->setFlags(ListViewFlag::Editable);
-    listView->list()->setModel<PlayerListModel>(&d.players);
+    listView->list()->setModel(&model);
 
     auto textView = window.addChild<TextView>();
-    textView->setTitle("Description");
+    textView->setTitle(L"Description");
     textView->textField()->setText(d.players.at(0).desc);
 
     listView->setOnAdd([&d, &listView, &window, &textView](auto, auto row) {
@@ -62,23 +64,21 @@ auto SimpleTextEditor::run() -> void {
 
         Prompt::createWithTextField(
             &window,
-            "New Player",
+            L"New Player",
             L"Enter a player's name:",
             L"New Player",
             [&d, &listView](auto p) {
                 d.players[listView->list()->selectedRow()].name = p->value();
                 listView->list()->clear();
-                p->window()->setFocused(listView);
             },
             [&listView](auto p) {
-                p->window()->setFocused(listView);
             });
     });
 
     listView->setOnRemove([&d, &window, &listView](auto, auto row) {
         Prompt::create(
             &window,
-            "Delete Player",
+            L"Delete Player",
             L"Are you sure you want to delete " + d.players[row].name + L"?",
             [&d, &listView](auto p) {
                 if (const auto itr = d.players.erase(d.players.begin() + listView->list()->selectedRow()); itr != d.players.end()) {
@@ -87,10 +87,8 @@ auto SimpleTextEditor::run() -> void {
                     listView->list()->selectRow(0);
                 }
                 listView->list()->clear();
-                p->window()->setFocused(listView);
             },
             [&listView](auto p) {
-                p->window()->setFocused(listView);
             });
     });
 
@@ -99,15 +97,15 @@ auto SimpleTextEditor::run() -> void {
         textView->textField()->setText(d.players.at(newRow).desc);
     });
 
-    listView->addLayoutConstraints({{LayoutAttribute::Left, &window, LayoutAttribute::Left, 3},
-                                    {LayoutAttribute::Top, &window, LayoutAttribute::Top, 2},
-                                    {LayoutAttribute::Width, 30},
-                                    {LayoutAttribute::Height, 40}});
+    listView->addLayoutConstraints({{LayoutAttr::Left, &window, LayoutAttr::Left, 3},
+                                    {LayoutAttr::Top, &window, LayoutAttr::Top, 2},
+                                    {LayoutAttr::Width, 30},
+                                    {LayoutAttr::Height, 40}});
 
-    textView->addLayoutConstraints({{LayoutAttribute::Left, listView, LayoutAttribute::Right, 1},
-                                    {LayoutAttribute::Top, listView, LayoutAttribute::Top},
-                                    {LayoutAttribute::Width, 100},
-                                    {LayoutAttribute::Height, listView, LayoutAttribute::Height}});
+    textView->addLayoutConstraints({{LayoutAttr::Left, listView, LayoutAttr::Right, 1},
+                                    {LayoutAttr::Top, listView, LayoutAttr::Top},
+                                    {LayoutAttr::Width, 100},
+                                    {LayoutAttr::Height, listView, LayoutAttr::Height}});
 
     while (true) {// NOLINT
         Keyboard::poll();

@@ -10,14 +10,22 @@
 #define _XOPEN_SOURCE_EXTENDED//NOLINT
 #define _XOPEN_SOURCE 500     //NOLINT
 
+#include <functional>
 #include <locale>
 #include <ncurses.h>
+#include <string>
+#include <vector>
 
 namespace trundle {
 struct TrundleData {
     ColorPair defaultColorPair = ColorPair::Default;
     ColorPair focusColorPair = ColorPair::GreenOnDefault;
-    ColorPair highlightColorPair = ColorPair::BlackOnGreen;
+    ColorPair highlightColorPair = ColorPair::BlackOnDefault;
+    ColorPair focusHighlightColorPair = ColorPair::BlackOnGreen;
+
+    std::vector<std::wstring> log{};
+
+    std::function<void()> onLogUpdated;
 };
 
 static auto _d = TrundleData{};
@@ -51,6 +59,7 @@ auto Trundle::init() -> void {
     initColorPair(ColorPair::DefaultOnBlue, COLOR_WHITE, COLOR_BLUE);
     initColorPair(ColorPair::BlackOnDefault, COLOR_BLACK, COLOR_WHITE);
     initColorPair(ColorPair::RedOnYellow, COLOR_RED, COLOR_YELLOW);
+    initColorPair(ColorPair::YellowOnWhite, COLOR_YELLOW, COLOR_WHITE);
 
     cbreak();
     noecho();
@@ -70,12 +79,8 @@ auto Trundle::end() -> void {
     endwin();
 }
 
-auto Trundle::print(const std::string& str) -> void {
-    printw(str.c_str());
-}
-
-auto Trundle::print(std::string_view str) -> void {
-    addnstr(str.data(), str.length());
+auto Trundle::print(const std::wstring& str) -> void {
+    addnwstr(str.data(), str.length());
 }
 
 auto Trundle::print(std::wstring_view str) -> void {
@@ -89,6 +94,20 @@ auto Trundle::print(std::wstring_view str, unsigned int maxChars) -> void {
     } else {
         Trundle::print(str);
     }
+}
+
+auto Trundle::print(wchar_t ch) -> void {
+    addnwstr(&ch, 1);
+}
+
+auto Trundle::print(char32_t ch) -> void {
+    auto cc = cchar_t{};
+    const auto c = static_cast<wchar_t>(ch);
+    attr_t attrs = A_BOLD | A_UNDERLINE;
+    short color_pair = 1;
+    setcchar(&cc, &c, attrs, color_pair, nullptr);
+
+    add_wch(&cc);
 }
 
 auto Trundle::moveCursor(glm::ivec2 pos) -> void {
@@ -111,6 +130,10 @@ auto Trundle::setHighlightColorPair(ColorPair pair) -> void {
     _d.highlightColorPair = pair;
 }
 
+auto Trundle::setFocusHighlightColorPair(ColorPair pair) -> void {
+    _d.focusHighlightColorPair = pair;
+}
+
 auto Trundle::defaultColorPair() -> ColorPair {
     return _d.defaultColorPair;
 }
@@ -123,6 +146,10 @@ auto Trundle::highlightColorPair() -> ColorPair {
     return _d.highlightColorPair;
 }
 
+auto Trundle::focusHighlightColorPair() -> ColorPair {
+    return _d.focusHighlightColorPair;
+}
+
 auto Trundle::windowSize() -> glm::ivec2 {
     auto x = int{}, y = int{};
     getmaxyx(stdscr, y, x);
@@ -131,6 +158,21 @@ auto Trundle::windowSize() -> glm::ivec2 {
 
 auto Trundle::currChar() -> int {
     return getch();
+}
+
+auto Trundle::log(std::wstring str) -> void {
+    _d.log.push_back(std::move(str));
+    if (_d.onLogUpdated) {
+        _d.onLogUpdated();
+    }
+}
+
+auto Trundle::log() -> const std::vector<std::wstring>& {
+    return _d.log;
+}
+
+auto Trundle::setOnLogUpdated(std::function<void()>&& fn) -> void {
+    _d.onLogUpdated = fn;
 }
 
 }

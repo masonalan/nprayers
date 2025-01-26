@@ -6,20 +6,25 @@
 
 #include "player.hpp"
 
-#include <trundle/model/list_model.hpp>
+#include <trundle/model/item_model.hpp>
 
 #include <vector>
 
 namespace examples {
 
-struct PlayerListModel final : trundle::ListModel {
-    explicit PlayerListModel(const std::vector<Player>* players);
+using namespace trundle;
 
-    [[nodiscard]] auto rowCount() const -> unsigned int override;
-    [[nodiscard]] auto rowText(unsigned int row) const -> const std::wstring& override;
+struct PlayerListModel final : ItemModel {
+    explicit PlayerListModel(std::vector<Player>* players);
+
+    [[nodiscard]] auto rowCount(Index parent) const -> unsigned int override;
+    [[nodiscard]] auto rowText(Index index) const -> const std::wstring& override;
+    [[nodiscard]] auto rowDecoration(Index index) const -> const std::wstring& override;
+    [[nodiscard]] auto index(Index parent, unsigned int row) const -> Index override;
+    [[nodiscard]] auto hasChildren(Index index) const -> bool override;
 
 private:
-    const std::vector<Player>* _players;
+    mutable std::vector<Player>* _players;
 };
 
 }

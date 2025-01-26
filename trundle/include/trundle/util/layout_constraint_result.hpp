@@ -12,7 +12,7 @@ struct Widget;
 
 struct LayoutConstraintResult {
     Widget* widget;
-    LayoutAttribute attr;
+    LayoutAttr attr;
     double result;
 };
 

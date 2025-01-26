@@ -15,7 +15,7 @@ struct FrameWidget;
 struct LabelWidget;
 struct PromptView;
 struct TextFieldWidget;
-struct WindowWidget;
+struct ScreenWidget;
 
 using PromptCallback = std::function<void(PromptView*)>;
 
@@ -31,11 +31,11 @@ struct PromptView final : FrameWidget {
 
     [[nodiscard]] auto message() const -> const std::wstring&;
     [[nodiscard]] auto value() const -> const std::wstring&;
-    [[nodiscard]] auto window() -> WindowWidget*;
+    [[nodiscard]] auto window() -> ScreenWidget*;
 
 protected:
     auto update() -> void override;
-    auto render() const noexcept -> void override;
+    auto render() const -> void override;
     auto focusChanged() -> void override;
 
 private:
@@ -43,7 +43,6 @@ private:
     std::wstring _placeholder;
 
     TextFieldWidget* _textField;
-    ActionBarWidget* _actionBar;
     LabelWidget* _arrowLabel;
     LabelWidget* _messageLabel;
 
@@ -52,14 +51,14 @@ private:
 };
 
 struct Prompt {
-    static auto create(WindowWidget* window,
-                   const std::string& title,
+    static auto create(ScreenWidget* window,
+                   const std::wstring& title,
                    const std::wstring& message,
                    PromptCallback&& onAccept,
                    PromptCallback&& onReject) -> PromptView*;
 
-    static auto createWithTextField(WindowWidget* window,
-                                    const std::string& title,
+    static auto createWithTextField(ScreenWidget* window,
+                                    const std::wstring& title,
                                     const std::wstring& message,
                                     const std::wstring& placeholder,
                                     PromptCallback&& onAccept,

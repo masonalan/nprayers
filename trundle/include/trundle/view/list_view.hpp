@@ -28,11 +28,9 @@ struct ListView final : FrameWidget {
     auto setOnRemove(ListViewCallback&& fn) -> void;
 
     [[nodiscard]] auto list() const -> ListWidget*;
-    [[nodiscard]] auto actionBar() const -> ActionBarWidget*;
 
 private:
     ListWidget* _list;
-    ActionBarWidget* _actionBar;
 
     ListViewCallback _addCallback{nullptr};
     ListViewCallback _removeCallback{nullptr};

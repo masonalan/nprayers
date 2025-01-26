@@ -17,11 +17,9 @@ struct TextView final : FrameWidget {
     explicit TextView(Widget* parent = nullptr);
 
     [[nodiscard]] auto textField() const -> TextFieldWidget*;
-    [[nodiscard]] auto actionBar() const -> ActionBarWidget*;
 
 private:
     TextFieldWidget* _field;
-    ActionBarWidget* _actionsBar;
 };
 
 }

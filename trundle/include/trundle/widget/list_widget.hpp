@@ -4,7 +4,12 @@
 
 #pragma once
 
+#include "trundle/model/model.hpp"
+#include "trundle/renderer/header_render_delegate.hpp"
+#include "trundle/renderer/item_render_delegate.hpp"
+
 #include <trundle/model/list_model.hpp>
+#include <trundle/util/key.hpp>
 #include <trundle/widget/widget.hpp>
 
 #include <string>
@@ -13,36 +18,44 @@
 namespace trundle {
 
 struct ListWidget;
+struct Model;
+struct HeaderRenderDelegate;
+struct ItemRenderDelegate;
 
 using SelectionChangedCallback = std::function<void(const ListWidget*, int, int)>;
 
-struct ListWidget : public Widget {
+struct ListWidget : Widget {
     explicit ListWidget(Widget* parent);
 
+    auto setModel(Model* model) -> void;
+    auto setUpKey(Key key) -> void;
+    auto setDownKey(Key key) -> void;
     auto addItem(std::string item) -> void;
     auto selectRow(int row) -> void;
 
     auto setOnSelectionChanged(SelectionChangedCallback&& fn) -> void;
+    auto setHeaderRenderDelegate(HeaderRenderDelegate* delegate) -> void;
+    auto setItemRenderDelegate(ItemRenderDelegate* delegate) -> void;
 
     [[nodiscard]] auto selectedRow() const -> int;
     [[nodiscard]] auto rowCount() const -> int;
-
-    template <typename T, typename... Args>
-    auto setModel(Args&&... args) {
-        static_assert(std::is_base_of_v<ListModel, T>);
-        _model = std::make_unique<T>(std::forward<Args>(args)...);
-    }
+    [[nodiscard]] auto model() const -> Model*;
 
 protected:
     auto update() -> void override;
-    auto render() const noexcept -> void override;
+    auto render() const -> void override;
 
 private:
-    std::unique_ptr<ListModel> _model{nullptr};
+    Model* _model{nullptr};
+    Key _upKey{Key::Up};
+    Key _downKey{Key::Down};
     std::vector<std::string> _items{};
     int _selectedRow{};
 
     SelectionChangedCallback _selectionChangedCallback{nullptr};
+
+    HeaderRenderDelegate* _headerRenderDelegate;
+    ItemRenderDelegate* _itemRenderDelegate;
 };
 
 }

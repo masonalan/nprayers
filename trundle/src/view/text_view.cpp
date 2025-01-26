@@ -13,36 +13,19 @@ namespace trundle {
 
 TextView::TextView(Widget* parent) :
     FrameWidget{parent} {
-    setTitleBarStyle(TitleBarStyle::MultiLine);
-
-    _actionsBar = addChild<ActionBarWidget>();
-    _actionsBar->addLayoutConstraint({LayoutAttribute::Left, this, LayoutAttribute::Left});
-    _actionsBar->addLayoutConstraint({LayoutAttribute::Right, this, LayoutAttribute::Right});
-    _actionsBar->addLayoutConstraint({LayoutAttribute::Bottom, this, LayoutAttribute::Bottom});
-    _actionsBar->addLayoutConstraint({LayoutAttribute::Height, _actionsBar, LayoutAttribute::Width, [this](auto w, auto, auto) {
-                                          if (!_actionsBar->visible()) {
-                                              return 0.0;
-                                          }
-                                          const auto cols = static_cast<int>(w->layoutAttributeValue(LayoutAttribute::Width).value().result) / 10;
-                                          const auto count = _actionsBar->actionsSize() - 1;
-                                          return static_cast<double>(count / cols + 2);
-                                      }});
+    setFrameStyle(FrameStyle::Window);
 
     _field = addChild<TextFieldWidget>();
-    _field->addLayoutConstraint({LayoutAttribute::Left, this, LayoutAttribute::Left, 2});
-    _field->addLayoutConstraint({LayoutAttribute::Right, this, LayoutAttribute::Right, -2});
-    _field->addLayoutConstraint({LayoutAttribute::Top, this, LayoutAttribute::Top, 3});
-    _field->addLayoutConstraint({LayoutAttribute::Bottom, _actionsBar, LayoutAttribute::Top});
+    _field->addLayoutConstraints({{LayoutAttr::Left, this, LayoutAttr::Left, 2},
+                                  {LayoutAttr::Right, this, LayoutAttr::Right, -2},
+                                  {LayoutAttr::Top, this, LayoutAttr::Top, 3},
+                                  {LayoutAttr::Bottom, actionBar(), LayoutAttr::Top, -2}});
 
-    _actionsBar->displayActions(_field->actions());
+    actionBar()->displayActions(_field->actions());
 }
 
 auto TextView::textField() const -> TextFieldWidget* {
     return _field;
-}
-
-auto TextView::actionBar() const -> ActionBarWidget* {
-    return _actionsBar;
 }
 
 }

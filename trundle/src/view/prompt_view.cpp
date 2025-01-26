@@ -17,26 +17,27 @@ namespace trundle {
 
 PromptView::PromptView(Widget* parent) :
     FrameWidget{parent} {
-    setTitleBarStyle(TitleBarStyle::DoubleLine);
+    setFrameStyle(FrameStyle::Window);
+    setFrameType(FrameType::Dialog);
 
     _messageLabel = addChild<LabelWidget>();
-    _messageLabel->addLayoutConstraint({LayoutAttribute::Left, this, LayoutAttribute::Left, 3});
-    _messageLabel->addLayoutConstraint({LayoutAttribute::Right, this, LayoutAttribute::Right, -2});
-    _messageLabel->addLayoutConstraint({LayoutAttribute::Top, this, LayoutAttribute::Top, 2});
-    _messageLabel->addLayoutConstraint({LayoutAttribute::Height, 1});
+    _messageLabel->addLayoutConstraint({LayoutAttr::Left, this, LayoutAttr::Left, 3});
+    _messageLabel->addLayoutConstraint({LayoutAttr::Right, this, LayoutAttr::Right, -2});
+    _messageLabel->addLayoutConstraint({LayoutAttr::Top, this, LayoutAttr::Top, headerHeight() + 1.0});
+    _messageLabel->addLayoutConstraint({LayoutAttr::Height, 1});
 
     _arrowLabel = addChild<LabelWidget>();
-    _arrowLabel->addLayoutConstraint({LayoutAttribute::Left, this, LayoutAttribute::Left, 3});
-    _arrowLabel->addLayoutConstraint({LayoutAttribute::Width, 1});
-    _arrowLabel->addLayoutConstraint({LayoutAttribute::Top, _messageLabel, LayoutAttribute::Bottom, 1});
-    _arrowLabel->addLayoutConstraint({LayoutAttribute::Height, 1});
+    _arrowLabel->addLayoutConstraint({LayoutAttr::Left, this, LayoutAttr::Left, 3});
+    _arrowLabel->addLayoutConstraint({LayoutAttr::Width, 1});
+    _arrowLabel->addLayoutConstraint({LayoutAttr::Top, _messageLabel, LayoutAttr::Bottom, 1});
+    _arrowLabel->addLayoutConstraint({LayoutAttr::Height, 1});
     _arrowLabel->setText(Unicode::TriangleRight);
 
     _textField = addChild<TextFieldWidget>();
-    _textField->addLayoutConstraint({LayoutAttribute::Left, _arrowLabel, LayoutAttribute::Right, 1});
-    _textField->addLayoutConstraint({LayoutAttribute::Right, this, LayoutAttribute::Right, -2});
-    _textField->addLayoutConstraint({LayoutAttribute::Top, _arrowLabel, LayoutAttribute::Top});
-    _textField->addLayoutConstraint({LayoutAttribute::Height, 1});
+    _textField->addLayoutConstraint({LayoutAttr::Left, _arrowLabel, LayoutAttr::Right, 1});
+    _textField->addLayoutConstraint({LayoutAttr::Right, this, LayoutAttr::Right, -2});
+    _textField->addLayoutConstraint({LayoutAttr::Top, _arrowLabel, LayoutAttr::Top});
+    _textField->addLayoutConstraint({LayoutAttr::Height, 1});
     _textField->setTextChanged([this](auto) {
         if (_placeholder.empty()) {
             return;
@@ -49,37 +50,34 @@ PromptView::PromptView(Widget* parent) :
         _placeholder = std::wstring{};
     });
 
-    _actionBar = addChild<ActionBarWidget>();
-
-    addLayoutConstraint({LayoutAttribute::Width, 40});
-    addLayoutConstraint({LayoutAttribute::Height, 9});
-    addLayoutConstraint({LayoutAttribute::Left, parent, LayoutAttribute::Left, [](auto w, auto p, auto val) {
-                             const auto pWidth = p->layoutAttributeValue(LayoutAttribute::Width).value().result;
-                             const auto wWidth = w->layoutAttributeValue(LayoutAttribute::Width).value().result;
+    addLayoutConstraint({LayoutAttr::Width, 40});
+    addLayoutConstraint({LayoutAttr::Height, 11});
+    addLayoutConstraint({LayoutAttr::Left, parent, LayoutAttr::Left, [](auto w, auto p, auto val) {
+                             const auto pWidth = p->layoutAttributeValue(LayoutAttr::Width).value().result;
+                             const auto wWidth = w->layoutAttributeValue(LayoutAttr::Width).value().result;
                              return pWidth / 2. - wWidth / 2.;
                          }});
-    addLayoutConstraint({LayoutAttribute::Top, parent, LayoutAttribute::Top, [](auto w, auto p, auto val) {
-                             const auto pHeight = p->layoutAttributeValue(LayoutAttribute::Height).value().result;
-                             const auto wHeight = w->layoutAttributeValue(LayoutAttribute::Height).value().result;
+    addLayoutConstraint({LayoutAttr::Top, parent, LayoutAttr::Top, [](auto w, auto p, auto val) {
+                             const auto pHeight = p->layoutAttributeValue(LayoutAttr::Height).value().result;
+                             const auto wHeight = w->layoutAttributeValue(LayoutAttr::Height).value().result;
                              return pHeight / 2. - wHeight / 2.;
                          }});
 
-    addAction(Key::Escape, "Cancel", [this](auto) {
+    addAction(Key::Escape, L"Cancel", [this](auto) {
         if (_onReject) {
             _onReject(this);
         }
         setVisible(false);
-        window()->setFocusLocked(false);
     });
-    addAction(Key::CtrlK, "Okay", [this](auto) {
+    addAction(Key::CtrlK, L"Okay", [this](auto) {
         if (_onAccept) {
             _onAccept(this);
         }
         setVisible(false);
-        window()->setFocusLocked(false);
     });
 
-    _actionBar->displayActions(actions());
+    actionBar()->displayActions(actions());
+    recalculateLayout();
 }
 
 auto PromptView::setMessage(const std::wstring& message) -> void {
@@ -117,24 +115,23 @@ auto PromptView::value() const -> const std::wstring& {
     return _textField->text();
 }
 
-auto PromptView::window() -> WindowWidget* {
-    return dynamic_cast<WindowWidget*>(parent());
+auto PromptView::window() -> ScreenWidget* {
+    return dynamic_cast<ScreenWidget*>(parent());
 }
 
 auto PromptView::update() -> void {
 }
 
-auto PromptView::render() const noexcept -> void {
+auto PromptView::render() const -> void {
     clear();
     FrameWidget::render();
 }
 
 auto PromptView::focusChanged() -> void {
-    window()->setFocusLocked(true);
 }
 
-auto Prompt::create(WindowWidget* window,
-                    const std::string& title,
+auto Prompt::create(ScreenWidget* window,
+                    const std::wstring& title,
                     const std::wstring& message,
                     PromptCallback&& onAccept,
                     PromptCallback&& onReject) -> PromptView* {
@@ -146,13 +143,11 @@ auto Prompt::create(WindowWidget* window,
     prompt->setVisible(true);
     prompt->setTextFieldVisible(false);
 
-    window->setFocused(prompt);
-
     return prompt;
 }
 
-auto Prompt::createWithTextField(WindowWidget* window,
-                                 const std::string& title,
+auto Prompt::createWithTextField(ScreenWidget* window,
+                                 const std::wstring& title,
                                  const std::wstring& message,
                                  const std::wstring& placeholder,
                                  PromptCallback&& onAccept,

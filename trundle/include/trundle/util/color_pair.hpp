@@ -24,7 +24,8 @@ enum class ColorPair : short {
     BlueOnDefault = 16,
     DefaultOnBlue = 17,
     BlackOnDefault = 18,
-    RedOnYellow = 19
+    RedOnYellow = 19,
+    YellowOnWhite = 20,
 };
 
 }

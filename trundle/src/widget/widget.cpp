@@ -8,29 +8,39 @@
 #include <trundle/util/action.hpp>
 #include <trundle/util/layout_constraint_result.hpp>
 #include <trundle/util/unicode.hpp>
+#include <trundle/widget/window_widget.hpp>
 
 #include <unordered_map>
 #include <vector>
 
 namespace trundle {
 
-static auto requiredLayoutAttributes(LayoutAttribute attr) {
+static auto requiredLayoutAttributes(LayoutAttr attr) {
     switch (attr) {
-    case LayoutAttribute::Right:
-        return std::vector{LayoutAttribute::Left, LayoutAttribute::Width};
-    case LayoutAttribute::Left:
-        return std::vector{LayoutAttribute::Right, LayoutAttribute::Width};
-    case LayoutAttribute::Top:
-        return std::vector{LayoutAttribute::Bottom, LayoutAttribute::Height};
-    case LayoutAttribute::Bottom:
-        return std::vector{LayoutAttribute::Top, LayoutAttribute::Height};
+    case LayoutAttr::Right:
+        return std::vector{LayoutAttr::Left, LayoutAttr::Width};
+    case LayoutAttr::Left:
+        return std::vector{LayoutAttr::Right, LayoutAttr::Width};
+    case LayoutAttr::Top:
+        return std::vector{LayoutAttr::Bottom, LayoutAttr::Height};
+    case LayoutAttr::Bottom:
+        return std::vector{LayoutAttr::Top, LayoutAttr::Height};
     default:
-        return std::vector<LayoutAttribute>{};
+        return std::vector<LayoutAttr>{};
     }
 }
 
 Widget::Widget(Widget* parent) :
-    _parent{parent} {
+    _parent{parent},
+    _window{[&parent]() {
+        if (const auto w = dynamic_cast<ScreenWidget*>(parent)) {
+            return w;
+        }
+        if (parent) {
+            return parent->window();
+        }
+        return static_cast<ScreenWidget*>(nullptr);
+    }()} {
     setFocused(parent != nullptr && parent->focused());
     setVisible(parent == nullptr || parent->visible());
 }
@@ -45,12 +55,14 @@ auto Widget::performUpdate() -> void {// NOLINT
         _layoutDirty = false;
     }
 
-    if (!_rendered) {
-        willAppear();
-        _rendered = true;
-    } else if (!visible()) {
-        willDisappear();
-        _rendered = false;
+    if (layoutResolved()) {
+        if (visible() && !_appeared) {
+            willAppear();
+            _appeared = true;
+        } else if (!visible() && _appeared) {
+            willDisappear();
+            _appeared = false;
+        }
     }
 
     for (auto& child : _children) {
@@ -75,6 +87,7 @@ auto Widget::performRender() const -> void {// NOLINT
         return;
     }
 
+    Trundle::moveCursor(pos());
     render();
 
     for (const auto& child : _children) {
@@ -112,7 +125,9 @@ auto Widget::setFocused(bool focused) -> void {// NOLINT
     }
     focusChanged();
     for (const auto& child : _children) {
-        child->setFocused(focused);
+        if (!focused || !dynamic_cast<FrameWidget*>(child.get())) {
+            child->setFocused(focused);
+        }
     }
 }
 
@@ -140,20 +155,33 @@ auto Widget::parent() const -> Widget* {
 
 auto Widget::pos() const -> glm::ivec2 {
     return glm::ivec2{
-        layoutAttributeValue(LayoutAttribute::Left).value().result,
-        layoutAttributeValue(LayoutAttribute::Top).value().result};
+        layoutAttributeValue(LayoutAttr::Left).value().result,
+        layoutAttributeValue(LayoutAttr::Top).value().result};
 }
 
 auto Widget::size() const -> glm::ivec2 {
     return glm::ivec2{
-        layoutAttributeValue(LayoutAttribute::Width).value().result,
-        layoutAttributeValue(LayoutAttribute::Height).value().result};
+        layoutAttributeValue(LayoutAttr::Width).value().result,
+        layoutAttributeValue(LayoutAttr::Height).value().result};
 }
 
-auto Widget::setLayoutAttributeValue(LayoutAttribute attr, LayoutAttributeValue value) -> void {// NOLINT
+auto Widget::setLayoutAttributeValue(LayoutAttr attr, LayoutAttributeValue value) -> void {// NOLINT
+    if (!visible()) {
+        if (value.priority == LayoutAttributeValuePriority::Explicit) {
+            if (attr == LayoutAttr::Height || attr == LayoutAttr::Width) {
+                value.result = 0;
+            } else {
+                if (value.relative) {
+                    value.result = value.xWidgetValue;
+                } else {
+                    value.result = 0;
+                }
+            }
+        }
+    }
     _values[attr] = value;
 
-    auto setImplicitValues = [this, &value](LayoutAttribute attr1, LayoutAttribute attr2, auto&& result1Fn, auto&& result2Fn) {// NOLINT
+    auto setImplicitValues = [this, &value](LayoutAttr attr1, LayoutAttr attr2, auto&& result1Fn, auto&& result2Fn) {// NOLINT
         const auto& value1 = layoutAttributeValue(attr1);
         const auto& value2 = layoutAttributeValue(attr2);
         if (layoutAttributeValueNotSetOrImplicit(value1) && value2.has_value()) {
@@ -164,50 +192,50 @@ auto Widget::setLayoutAttributeValue(LayoutAttribute attr, LayoutAttributeValue 
     };
 
     switch (attr) {
-    case LayoutAttribute::Left: {
+    case LayoutAttr::Left: {
         setImplicitValues(
-            LayoutAttribute::Right,
-            LayoutAttribute::Width,
+            LayoutAttr::Right,
+            LayoutAttr::Width,
             [](auto left, auto width) { return left + width; },
             [](auto left, auto right) { return right - left; });
         break;
     }
-    case LayoutAttribute::Right: {
+    case LayoutAttr::Right: {
         setImplicitValues(
-            LayoutAttribute::Left,
-            LayoutAttribute::Width,
+            LayoutAttr::Left,
+            LayoutAttr::Width,
             [](auto right, auto width) { return right - width; },
             [](auto right, auto left) { return right - left; });
         break;
     }
-    case LayoutAttribute::Top: {
+    case LayoutAttr::Top: {
         setImplicitValues(
-            LayoutAttribute::Bottom,
-            LayoutAttribute::Height,
+            LayoutAttr::Bottom,
+            LayoutAttr::Height,
             [](auto top, auto height) { return top + height; },
             [](auto top, auto bottom) { return bottom - top; });
         break;
     }
-    case LayoutAttribute::Bottom: {
+    case LayoutAttr::Bottom: {
         setImplicitValues(
-            LayoutAttribute::Top,
-            LayoutAttribute::Height,
+            LayoutAttr::Top,
+            LayoutAttr::Height,
             [](auto bottom, auto height) { return bottom - height; },
             [](auto bottom, auto top) { return bottom - top; });
         break;
     }
-    case LayoutAttribute::Width: {
+    case LayoutAttr::Width: {
         setImplicitValues(
-            LayoutAttribute::Left,
-            LayoutAttribute::Right,
+            LayoutAttr::Left,
+            LayoutAttr::Right,
             [](auto width, auto right) { return right - width; },
             [](auto width, auto left) { return left + width; });
         break;
     }
-    case LayoutAttribute::Height: {
+    case LayoutAttr::Height: {
         setImplicitValues(
-            LayoutAttribute::Top,
-            LayoutAttribute::Bottom,
+            LayoutAttr::Top,
+            LayoutAttr::Bottom,
             [](auto height, auto bottom) { return bottom - height; },
             [](auto height, auto top) { return height + top; });
         break;
@@ -217,7 +245,7 @@ auto Widget::setLayoutAttributeValue(LayoutAttribute attr, LayoutAttributeValue 
     }
 }
 
-auto Widget::layoutAttributeValue(trundle::LayoutAttribute attr) const -> std::optional<LayoutAttributeValue> {
+auto Widget::layoutAttributeValue(trundle::LayoutAttr attr) const -> std::optional<LayoutAttributeValue> {
     if (_values.count(attr)) {
         return _values.at(attr);
     }
@@ -225,8 +253,8 @@ auto Widget::layoutAttributeValue(trundle::LayoutAttribute attr) const -> std::o
 }
 
 auto Widget::layoutResolved() const -> bool {
-    for (auto i = 0; i < static_cast<std::underlying_type_t<LayoutAttribute>>(LayoutAttribute::None); ++i) {
-        if (!_values.count(static_cast<LayoutAttribute>(i))) {
+    for (auto i = 0; i < static_cast<std::underlying_type_t<LayoutAttr>>(LayoutAttr::None); ++i) {
+        if (!_values.count(static_cast<LayoutAttr>(i))) {
             return false;
         }
     }
@@ -249,17 +277,29 @@ auto Widget::actions() const -> const std::vector<std::unique_ptr<Action>>& {
     return _actions;
 }
 
+auto Widget::window() const -> ScreenWidget* {
+    return _window;
+}
+
 auto Widget::recalculateLayoutAttributeValues() -> void {
     for (auto& c : _constraints) {
         if (!c.xWidget) {
-            setLayoutAttributeValue(c.yAttr, {static_cast<int>(c.constantFn ? c.constantFn(this) : c.constant), LayoutAttributeValuePriority::Explicit});
+            setLayoutAttributeValue(c.yAttr, {static_cast<int>(c.constantFn ? c.constantFn(this) : c.constant), LayoutAttributeValuePriority::Explicit, false, 0});
         } else if (const auto val = c.xWidget->layoutAttributeValue(c.xAttr); val.has_value()) {
             if (c.constantFnAttr) {
-                setLayoutAttributeValue(c.yAttr, {static_cast<int>(c.constantFnAttr(this, c.xWidget, val.value().result)), LayoutAttributeValuePriority::Explicit});
+                setLayoutAttributeValue(c.yAttr, {static_cast<int>(c.constantFnAttr(this, c.xWidget, val.value().result)), LayoutAttributeValuePriority::Explicit, true, val.value().result});
             } else {
-                setLayoutAttributeValue(c.yAttr, {static_cast<int>(val.value().result * c.multiplier + c.constant), LayoutAttributeValuePriority::Explicit});
+                setLayoutAttributeValue(c.yAttr, {static_cast<int>(val.value().result * c.multiplier + c.constant), LayoutAttributeValuePriority::Explicit, true, static_cast<int>(val.value().result)});
             }
         }
+    }
+}
+
+auto Widget::recalculateLayout() -> void {// NOLINT
+    clear();
+    recalculateLayoutAttributeValues();
+    for (const auto& child : _children) {
+        child->recalculateLayout();
     }
 }
 
@@ -287,7 +327,7 @@ auto Widget::endListeningForActions() -> void {
 auto Widget::update() -> void {
 }
 
-auto Widget::render() const noexcept -> void {
+auto Widget::render() const -> void {
 }
 
 auto Widget::focusChanged() -> void {

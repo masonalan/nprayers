@@ -14,7 +14,7 @@ struct TextAreaWidget : public Widget {
     auto setText(const std::string& text) -> void;
 
 protected:
-    auto render() const noexcept -> void override;
+    auto render() const -> void override;
 
 private:
     std::string _text{};

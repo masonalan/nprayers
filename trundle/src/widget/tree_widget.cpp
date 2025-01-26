@@ -4,55 +4,53 @@
 
 #include <trundle/widget/tree_widget.hpp>
 
+#include <trundle/model/filter_model.hpp>
+#include <trundle/renderer/abstract_header_render_delegate.hpp>
+#include <trundle/renderer/tree_item_render_delegate.hpp>
 #include <trundle/trundle.hpp>
 #include <trundle/util/keyboard.hpp>
-#include <trundle/util/unicode.hpp>
 #include <trundle/widget/scroll_bar_widget.hpp>
 
 namespace trundle {
 
+static auto defaultItemRenderDelegate = std::make_unique<TreeItemRenderDelegate>();
+static auto defaultHeaderRenderDelegate = std::make_unique<AbstractHeaderRenderDelegate>();
+
 TreeWidget::TreeWidget(Widget* parent) :
     Widget{parent} {
+    setItemRenderDelegate(defaultItemRenderDelegate.get());
+    setHeaderRenderDelegate(defaultHeaderRenderDelegate.get());
+
     _scrollBar = addChild<ScrollBarWidget>();
-    _scrollBar->addLayoutConstraints({{LayoutAttribute::Right, this, LayoutAttribute::Right},
-                                      {LayoutAttribute::Top, this, LayoutAttribute::Top},
-                                      {LayoutAttribute::Bottom, this, LayoutAttribute::Bottom}});
+    _scrollBar->addLayoutConstraints({{LayoutAttr::Right, this, LayoutAttr::Right},
+                                      {LayoutAttr::Top, this, LayoutAttr::Top},
+                                      {LayoutAttr::Bottom, this, LayoutAttr::Bottom}});
 }
 
-auto TreeWidget::setModel(TreeModel* model) -> void {
+auto TreeWidget::setModel(Model* model) -> void {
     _model = model;
     _model->setOnDataChanged([this](auto) {
+        clear();
         _rows.clear();
 
-        auto stack = std::vector<Index>{};
-        auto index = _model->index(Index{}, 0);
-
-        while (true) {
-            const auto rowCount = _model->rowCount(index);
-            const auto state = _model->state(index);
-
-            _rows.push_back(index);
-
-            if (state.expanded && rowCount) {
-                stack.push_back(index);
-                index = _model->index(index, 0);
-            } else {
-                while (!stack.empty() && _model->rowCount(stack.back()) == index.row + 1) {
-                    index = stack.back();
-                    stack.erase(stack.end() - 1);
-                }
-
-                if (stack.empty()) {
-                    break;
-                }
-
-                index = _model->index(stack.back(), index.row + 1);
-            }
+        if (!_model->rowCount(_model->createIndex())) {
+            _scrollBar->setContentHeight(_rows.size());
+            return;
         }
+
+        _model->forEachIndex(_model->root(), false, [this](const auto, const auto index) {
+            _rows.push_back(index);
+            return ForEachOperation::Continue;
+        });
 
         _scrollBar->setContentHeight(_rows.size());
     });
     _model->dataChanged();
+}
+
+auto TreeWidget::setSelectedRow(int row) -> void {
+    _selectedRow = row;
+    clear();
 }
 
 auto TreeWidget::setOnExpand(TreeWidgetCallback&& fn) -> void {
@@ -63,8 +61,32 @@ auto TreeWidget::setOnCollapse(TreeWidgetCallback&& fn) -> void {
     _onCollapse = fn;
 }
 
+auto TreeWidget::setOnSelectionChanged(TreeWidgetCallback&& fn) -> void {
+    _onSelectionChanged = fn;
+}
+
+auto TreeWidget::setHeaderRenderDelegate(HeaderRenderDelegate* delegate) -> void {
+    _headerRenderDelegate = delegate;
+}
+
+auto TreeWidget::setItemRenderDelegate(ItemRenderDelegate* delegate) -> void {
+    _itemRenderDelegate = delegate;
+}
+
 auto TreeWidget::selectedIndex() const -> Index {
     return _rows[_selectedRow];
+}
+
+auto TreeWidget::selectedRow() const -> int {
+    return _selectedRow;
+}
+
+auto TreeWidget::scrollOffset() const -> int {
+    return _scrollOffset;
+}
+
+auto TreeWidget::model() const -> Model* {
+    return _model;
 }
 
 auto TreeWidget::update() -> void {
@@ -73,7 +95,10 @@ auto TreeWidget::update() -> void {
         case Key::Up: {
             if (const auto row = std::max(_selectedRow - 1, 0); row != _selectedRow) {
                 _selectedRow = row;
-                if (_selectedRow < 0 + _scrollOffset) {
+                if (_onSelectionChanged) {
+                    _onSelectionChanged(this);
+                }
+                if (_selectedRow < _scrollOffset) {
                     --_scrollOffset;
                     _scrollBar->setScrollOffset(_scrollOffset);
                     clear();
@@ -84,7 +109,10 @@ auto TreeWidget::update() -> void {
         case Key::Down: {
             if (const auto row = std::min(_selectedRow + 1, static_cast<int>(_rows.size()) - 1); row != _selectedRow) {
                 _selectedRow = row;
-                if (_selectedRow >= size().y + _scrollOffset) {
+                if (_onSelectionChanged) {
+                    _onSelectionChanged(this);
+                }
+                if (_selectedRow >= size().y + _scrollOffset - (_model->headerVisible() ? 1 : 0)) {
                     ++_scrollOffset;
                     _scrollBar->setScrollOffset(_scrollOffset);
                     clear();
@@ -94,13 +122,11 @@ auto TreeWidget::update() -> void {
         }
         case Key::Enter: {
             auto state = _model->state(_rows[_selectedRow]);
-            state.expanded = !state.expanded;
+            state.setExpanded(!state.expanded());
             _model->setState(_rows[_selectedRow], state);
             clear();
-            if (state.expanded) {
-                if (_onExpand) {
-                    _onExpand(this);
-                }
+            if (state.expanded()) {
+                _model->loadChildren(_rows[_selectedRow]);
             } else {
                 if (_onCollapse) {
                     _onCollapse(this);
@@ -112,39 +138,39 @@ auto TreeWidget::update() -> void {
             break;
         }
     }
+
+    _model->update();
 }
 
-auto TreeWidget::render() const noexcept -> void {
+auto TreeWidget::render() const -> void {
     if (!_model) {
         return;
     }
 
     auto row = 0;
     auto level = 0;
-    //auto parent = Index{};
+    auto offset = 0;
 
-    auto parents = std::vector<Index>{Index{}};
+    auto parents = std::vector<Index>{_model->createIndex()};
+
+    if (!_model->headerText().empty()) {
+        offset += _headerRenderDelegate->render(this, {pos().x + 1, pos().y});
+    }
 
     auto i = 0;
     for (const auto& index : _rows) {
         const auto state = _model->state(index);
+        const auto selected = row == _selectedRow - _scrollOffset;
 
-        if (i >= _scrollOffset && i < _scrollOffset + size().y) {
-            Trundle::moveCursor({pos().x + level * 2, pos().y + row});
-            Trundle::print(_model->hasChildren(index) ? (state.expanded ? Unicode::FolderOpened : Unicode::FolderClosed) : String::Space);
-            Trundle::print(String::Space);
-
-            if (row == _selectedRow - _scrollOffset) {
-                Trundle::setColorPair(Trundle::highlightColorPair());
-            }
-            Trundle::print(_model->rowText(index), size().x - (level * 2 + 2) - 2);
-            if (row == _selectedRow - _scrollOffset) {
-                Trundle::setColorPair(Trundle::defaultColorPair());
-            }
+        if (i >= _scrollOffset && i < _scrollOffset + size().y - offset) {
+            const auto p = glm::ivec2{pos().x + level * 2, pos().y + row + offset};
+            Trundle::moveCursor(p);
+            auto options = TreeIndexRenderOptions{row, level};
+            _itemRenderDelegate->render(this, index, p, i == _selectedRow, &options);
             ++row;
         }
 
-        if (state.expanded && _model->rowCount(index)) {
+        if (state.expanded() && _model->rowCount(index)) {
             ++level;
             // TODO: add parent to stack
             parents.push_back(index);

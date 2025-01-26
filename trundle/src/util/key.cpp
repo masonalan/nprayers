@@ -68,12 +68,18 @@ auto keyToString(Key key) -> const std::wstring& {
         return KeyStr::OptS;
     case Key::Right:
         return KeyStr::Right;
+    case Key::ShiftDown:
+        return KeyStr::ShiftDown;
     case Key::ShiftLeft:
         return KeyStr::ShiftLeft;
     case Key::ShiftRight:
         return KeyStr::ShiftRight;
+    case Key::ShiftUp:
+        return KeyStr::ShiftUp;
     case Key::ShiftTab:
         return KeyStr::ShiftTab;
+    case Key::Space:
+        return KeyStr::Space;
     case Key::Tab:
         return KeyStr::Tab;
     case Key::Up:

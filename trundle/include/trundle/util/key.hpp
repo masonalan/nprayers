@@ -41,8 +41,11 @@ enum class Key {
     OptS,
     Right,
     ShiftTab,
+    ShiftDown,
     ShiftLeft,
     ShiftRight,
+    ShiftUp,
+    Space,
     Tab,
     Up,
     None
@@ -67,9 +70,10 @@ struct KeyStr {
     static constexpr std::wstring CtrlW = L"^W";
     static constexpr std::wstring CtrlX = L"^X";
     static constexpr std::wstring Delete = L"⌫";
+    static constexpr std::wstring Space = L"[]";
     static constexpr std::wstring Down = Unicode::ArrowDown;
     static constexpr std::wstring Enter = Unicode::Return;
-    static constexpr std::wstring Escape = L"ESC";
+    static constexpr std::wstring Escape = L"␛";
     static constexpr std::wstring Left = Unicode::ArrowLeft;
     static constexpr std::wstring OptLeft = Unicode::Option + Left;
     static constexpr std::wstring OptO = Unicode::Option + L"O";
@@ -78,8 +82,10 @@ struct KeyStr {
     static constexpr std::wstring OptRight = Unicode::Option + Unicode::ArrowRight;
     static constexpr std::wstring OptS = Unicode::Option + L"S";
     static constexpr std::wstring Right = Unicode::ArrowRight;
+    static constexpr std::wstring ShiftDown = Unicode::ArrowUpOutline + Down;
     static constexpr std::wstring ShiftLeft = Unicode::ArrowUpOutline + Left;
     static constexpr std::wstring ShiftRight = Unicode::ArrowUpOutline + Right;
+    static constexpr std::wstring ShiftUp = Unicode::ArrowUpOutline + Unicode::ArrowUp;
     static constexpr std::wstring ShiftTab = Unicode::ArrowUpOutline + Unicode::ArrowRightVertLine;
     static constexpr std::wstring Tab = Unicode::ArrowRightVertLine;
     static constexpr std::wstring Up = Unicode::ArrowUp;

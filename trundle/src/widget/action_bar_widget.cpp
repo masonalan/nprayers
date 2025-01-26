@@ -16,18 +16,18 @@ ActionBarWidget::ActionBarWidget(Widget* parent) :
     Widget{parent} {
     setVisible(focused());
 
-    _divider = addChild<DividerWidget>();
-    _divider->addLayoutConstraint({LayoutAttribute::Left, this, LayoutAttribute::Left, -1});
-    _divider->addLayoutConstraint({LayoutAttribute::Right, this, LayoutAttribute::Right, 1});
-    _divider->addLayoutConstraint({LayoutAttribute::Bottom, this, LayoutAttribute::Top});
-    _divider->addLayoutConstraint({LayoutAttribute::Height, 1});
-    _divider->setDividerOrientation(DividerOrientation::Horizontal);
-    _divider->setVisible(focused() && !_displayActions.empty());
+    // _divider = addChild<DividerWidget>();
+    // _divider->addLayoutConstraint({LayoutAttribute::Left, this, LayoutAttribute::Left});
+    // _divider->addLayoutConstraint({LayoutAttribute::Right, this, LayoutAttribute::Right});
+    // _divider->addLayoutConstraint({LayoutAttribute::Bottom, this, LayoutAttribute::Top});
+    // _divider->addLayoutConstraint({LayoutAttribute::Height, 1});
+    // _divider->setDividerOrientation(DividerOrientation::Horizontal);
+    // _divider->setVisible(focused() && !_displayActions.empty());
 
-    addLayoutConstraint({LayoutAttribute::Left, parent, LayoutAttribute::Left});
-    addLayoutConstraint({LayoutAttribute::Right, parent, LayoutAttribute::Right});
-    addLayoutConstraint({LayoutAttribute::Bottom, parent, LayoutAttribute::Bottom});
-    addLayoutConstraint({LayoutAttribute::Height, this, LayoutAttribute::Width, [this](auto, auto, auto v) {
+    addLayoutConstraint({LayoutAttr::Left, parent, LayoutAttr::Left, 1});
+    addLayoutConstraint({LayoutAttr::Right, parent, LayoutAttr::Right, -1});
+    addLayoutConstraint({LayoutAttr::Bottom, parent, LayoutAttr::Bottom});
+    addLayoutConstraint({LayoutAttr::Height, this, LayoutAttr::Width, [this](auto, auto, auto v) {
                              if (!this->visible()) {
                                  return 0.0;
                              }
@@ -38,16 +38,19 @@ ActionBarWidget::ActionBarWidget(Widget* parent) :
 }
 
 auto ActionBarWidget::displayActions(const std::vector<std::unique_ptr<Action>>& actions) -> void {
+    _displayActions.clear();
     for (const auto& action : actions) {
         _displayActions.push_back(action.get());
     }
-    _divider->setVisible(focused() && !_displayActions.empty());
+    // _divider->setVisible(focused() && !_displayActions.empty());
+    // _divider->setVisible(false);
 }
 
 auto ActionBarWidget::focusChanged() -> void {
-    setVisible(focused());
-    parent()->queueRecalculateLayoutConstraints();
-    _divider->setVisible(focused() && !_displayActions.empty());
+    // setVisible(focused());
+    // parent()->queueRecalculateLayoutConstraints();
+    // _divider->setVisible(focused() && !_displayActions.empty());
+    // _divider->setVisible(false);
 }
 
 auto ActionBarWidget::actionsSize() const -> int {
@@ -58,7 +61,7 @@ auto ActionBarWidget::cols() const -> int {
     return std::min(size().x / ActionWidth, static_cast<int>(_displayActions.size()));
 }
 
-auto ActionBarWidget::render() const noexcept -> void {
+auto ActionBarWidget::render() const -> void {
     if (!cols()) {
         return;
     }
@@ -70,14 +73,14 @@ auto ActionBarWidget::render() const noexcept -> void {
 
     for (const auto& action : _displayActions) {
         Trundle::moveCursor({pos().x + col * colWidth + 1, pos().y + row});
-        Trundle::setColorPair(Trundle::highlightColorPair());
+        Trundle::setColorPair(Trundle::focusHighlightColorPair());
         Trundle::print(keyToString(action->key));
         Trundle::setColorPair(Trundle::defaultColorPair());
         Trundle::print(String::Space);
         Trundle::print(action->title);
 
         ++col;
-        if (pos().x + col * colWidth + colWidth > layoutAttributeValue(LayoutAttribute::Right).value().result) {
+        if (pos().x + col * colWidth + colWidth > layoutAttributeValue(LayoutAttr::Right).value().result) {
             col = 0;
             ++row;
         }

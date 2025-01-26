@@ -6,32 +6,62 @@
 
 #include <trundle/widget/widget.hpp>
 
+#include <functional>
 #include <string>
-
-enum class TitleBarStyle {
-    SingleLine,
-    DoubleLine,
-    MultiLine,
-    None
-};
 
 namespace trundle {
 
-struct FrameWidget : public Widget {
-    using Widget::Widget;
+enum class FrameStyle {
+    SingleLine,
+    DoubleLine,
+    Window,
+    Header
+};
 
-    auto setTitle(const std::string& title) -> void;
-    auto setTitleBarStyle(TitleBarStyle style) -> void;
+enum class FrameType {
+    Screen,
+    Window,
+    BottomSheet,
+    Dialog,
+    Widget,
+    Invalid
+};
 
-    [[nodiscard]] auto title() const -> const std::string&;
-    [[nodiscard]] auto titleBarStyle() const -> TitleBarStyle;
+struct ActionBarWidget;
+struct FrameWidget;
+
+using FrameWidgetCallback = std::function<void(FrameWidget*)>;
+
+struct FrameWidget : Widget {
+    explicit FrameWidget(Widget* parent = nullptr);
+
+    auto setTitle(const std::wstring& title) -> void;
+    auto setFrameType(FrameType type) -> void;
+    auto setFrameStyle(FrameStyle style) -> void;
+
+    auto setOnHide(FrameWidgetCallback&& fn) -> void;
+
+    [[nodiscard]] auto title() const -> const std::wstring&;
+    [[nodiscard]] auto frameStyle() const -> FrameStyle;
+    [[nodiscard]] auto frameType() const -> FrameType;
+    [[nodiscard]] auto headerHeight() const -> int;
+    [[nodiscard]] auto actionBar() const -> ActionBarWidget*;
 
 protected:
-    auto render() const noexcept -> void override;
+    auto render() const -> void override;
+    auto update() -> void override;
+    auto willAppear() -> void override;
+    auto willDisappear() -> void override;
 
 private:
-    std::string _title{};
-    TitleBarStyle _titleBarStyle = TitleBarStyle::SingleLine;
+    ActionBarWidget* _actionBar;
+    FrameStyle _frameStyle = FrameStyle::SingleLine;
+    FrameType _frameType = FrameType::Window;
+    FrameWidgetCallback _onHide = nullptr;
+
+    std::wstring _title{};
+
+    unsigned int _headerHeight = 1;
 };
 
 }

@@ -9,7 +9,7 @@
 
 namespace trundle {
 
-enum class LayoutAttribute {
+enum class LayoutAttr {
     Width,
     Height,
     Left,
@@ -19,7 +19,7 @@ enum class LayoutAttribute {
     None
 };
 
-auto layoutAttributeToString(LayoutAttribute attr) -> std::string;
+auto layoutAttributeToString(LayoutAttr attr) -> std::string;
 
 enum class LayoutAttributeValuePriority {
     Implicit,
@@ -29,6 +29,8 @@ enum class LayoutAttributeValuePriority {
 struct LayoutAttributeValue {
     int result;
     LayoutAttributeValuePriority priority;
+    bool relative;
+    int xWidgetValue;
 };
 
 // TODO: define

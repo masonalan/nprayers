@@ -17,6 +17,7 @@
 namespace trundle {
 
 struct TextFieldWidget;
+struct ScrollBarWidget;
 
 using TextChangedCallback = std::function<void(TextFieldWidget*)>;
 
@@ -27,11 +28,14 @@ struct TextFieldWidget : Widget {
     auto setTextChanged(TextChangedCallback&& callback) -> void;
     auto setCursor(WrappingTextIterator cursor) -> void;
 
+    auto scrollToEnd() -> void;
+
     [[nodiscard]] auto text() const -> const std::wstring&;
+    [[nodiscard]] auto wrappedText() -> WrappingText&;
 
 protected:
     auto update() -> void override;
-    auto render() const noexcept -> void override;
+    auto render() const -> void override;
     auto willAppear() -> void override;
 
 private:
@@ -42,6 +46,9 @@ private:
     WrappingTextIterator _cursor{};
     WrappingText _text{};
     TextChangedCallback _textChanged{nullptr};
+    ScrollBarWidget* _scrollBar{nullptr};
+    int _scrollOffset{};
+
 };
 
 }

@@ -6,22 +6,26 @@
 
 #include <trundle/widget/frame_widget.hpp>
 
+#include <set>
+
 namespace trundle {
 
-struct WindowWidget : FrameWidget {
-    explicit WindowWidget(Widget* parent = nullptr);
+struct ScreenWidget : FrameWidget {
+    ScreenWidget();
 
-    auto setFocused(Widget* widget) -> void;
-    auto setFocusLocked(bool locked) -> void;
+    auto index(FrameWidget* frame) const -> int;
+    auto focus(FrameWidget* parent, int idx) -> void;
+    auto unFocus(const FrameWidget* parent, int idx) -> void;
 
-protected:
-    auto childAdded() -> void override;
+    auto frameWillAppear(FrameWidget* frame) -> void;
+    auto frameWillDisappear(FrameWidget* frame) -> void;
 
 private:
-    int _selectedWidget{};
     unsigned int _selectWidgetListener;
     bool _focusLocked{false};
-    Widget* _focusedWidget{nullptr};
+
+    std::unordered_map<FrameType, int> _focusedWidgetIdx{};
+    std::unordered_map<const FrameWidget*, std::vector<FrameWidget*>> _visibleFrames{};
 };
 
 }

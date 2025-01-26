@@ -7,9 +7,9 @@
 
 namespace trundle {
 
-LayoutConstraint::LayoutConstraint(LayoutAttribute yAttr,
+LayoutConstraint::LayoutConstraint(LayoutAttr yAttr,
                                    Widget* xWidget,
-                                   LayoutAttribute xAttr,
+                                   LayoutAttr xAttr,
                                    double constant,
                                    double multiplier) :
     yAttr{yAttr},
@@ -21,9 +21,9 @@ LayoutConstraint::LayoutConstraint(LayoutAttribute yAttr,
     constantFnAttr{nullptr} {
 }
 
-LayoutConstraint::LayoutConstraint(LayoutAttribute yAttr,
+LayoutConstraint::LayoutConstraint(LayoutAttr yAttr,
                                    Widget* xWidget,
-                                   LayoutAttribute xAttr,
+                                   LayoutAttr xAttr,
                                    ConstantValueWidgetCallback constantFnAttr,
                                    double multiplier) :
     yAttr{yAttr},
@@ -35,23 +35,23 @@ LayoutConstraint::LayoutConstraint(LayoutAttribute yAttr,
     constantFn{nullptr} {
 }
 
-LayoutConstraint::LayoutConstraint(LayoutAttribute yAttr,
+LayoutConstraint::LayoutConstraint(LayoutAttr yAttr,
                                    double constant) :
     yAttr{yAttr},
     constant{constant},
     xWidget{nullptr},
-    xAttr{LayoutAttribute::None},
+    xAttr{LayoutAttr::None},
     multiplier{1},
     constantFn{nullptr},
     constantFnAttr{nullptr} {
 }
 
-LayoutConstraint::LayoutConstraint(LayoutAttribute yAttr,
+LayoutConstraint::LayoutConstraint(LayoutAttr yAttr,
                                    ConstantValueCallback constantFn) :
     yAttr{yAttr},
     constant{},
     xWidget{nullptr},
-    xAttr{LayoutAttribute::None},
+    xAttr{LayoutAttr::None},
     multiplier{},
     constantFn{std::move(constantFn)},
     constantFnAttr{nullptr} {}

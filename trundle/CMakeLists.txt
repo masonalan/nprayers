@@ -56,6 +56,36 @@ add_library(
         src/model/tree_model.cpp
         include/trundle/widget/scroll_bar_widget.hpp
         src/widget/scroll_bar_widget.cpp
+        include/trundle/view/tree_view.hpp
+        src/view/tree_view.cpp
+        include/trundle/model/filter_model.hpp
+        src/model/filter_model.cpp
+        include/trundle/model/item_model.hpp
+        src/model/item_model.cpp
+        include/trundle/view/search_view.hpp
+        src/view/search_view.cpp
+        include/trundle/view/view.hpp
+        src/view/view.cpp
+        include/trundle/widget/meter_widget.hpp
+        src/widget/meter_widget.cpp
+        include/trundle/widget/slider_widget.hpp
+        src/widget/slider_widget.cpp
+        include/trundle/widget/picker_widget.hpp
+        src/widget/picker_widget.cpp
+        include/trundle/model/widget_model.hpp
+        src/model/widget_model.cpp
+        include/trundle/model/model.hpp
+        src/model/model.cpp
+        include/trundle/model/index.hpp
+        include/trundle/model/index_state.hpp
+        include/trundle/renderer/item_render_delegate.hpp
+        include/trundle/renderer/header_render_delegate.hpp
+        include/trundle/renderer/abstract_header_render_delegate.hpp
+        src/renderer/abstract_header_render_delegate.cpp
+        include/trundle/renderer/tree_item_render_delegate.hpp
+        src/renderer/tree_item_render_delegate.cpp
+        include/trundle/renderer/list_item_render_delegate.hpp
+        src/renderer/list_item_render_delegate.cpp
 )
 
 target_include_directories(trundle PUBLIC include)

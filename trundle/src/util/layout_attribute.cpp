@@ -6,22 +6,22 @@
 
 namespace trundle {
 
-auto layoutAttributeToString(LayoutAttribute attr) -> std::string {
+auto layoutAttributeToString(LayoutAttr attr) -> std::string {
     switch (attr) {
-    case LayoutAttribute::Left:
+    case LayoutAttr::Left:
         return "Left";
-    case LayoutAttribute::Right:
+    case LayoutAttr::Right:
         return "Right";
-    case LayoutAttribute::Top:
+    case LayoutAttr::Top:
         return "Top";
-    case LayoutAttribute::Bottom:
+    case LayoutAttr::Bottom:
         return "Bottom";
-    case LayoutAttribute::Width:
+    case LayoutAttr::Width:
         return "Width";
-    case LayoutAttribute::Height:
+    case LayoutAttr::Height:
         return "Height";
     default:
-        return "Unkown (" + std::to_string(static_cast<std::underlying_type_t<LayoutAttribute>>(attr)) + ")";
+        return "Unkown (" + std::to_string(static_cast<std::underlying_type_t<LayoutAttr>>(attr)) + ")";
     }
 }
 

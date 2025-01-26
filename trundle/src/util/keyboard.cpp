@@ -61,9 +61,12 @@ auto Keyboard::init() -> void {
     _d.keyMap[Key::OptRight] = {27, 91, 49, 59, 51, 67};
     _d.keyMap[Key::Right] = {27, 91, 67};
     _d.keyMap[Key::Tab] = {9};
+    _d.keyMap[Key::Space] = {32};
     _d.keyMap[Key::ShiftTab] = {27, 91, 90};
+    _d.keyMap[Key::ShiftDown] = {27, 91, 49, 59, 50, 66};
     _d.keyMap[Key::ShiftLeft] = {27, 91, 49, 59, 50, 68};
     _d.keyMap[Key::ShiftRight] = {27, 91, 49, 59, 50, 67};
+    _d.keyMap[Key::ShiftUp] = {27, 91, 49, 59, 50, 65};
     _d.keyMap[Key::Up] = {27, 91, 65};
 
     KeyNode* node;

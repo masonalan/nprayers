@@ -14,28 +14,26 @@ namespace trundle {
 
 ListView::ListView(Widget* parent) :
     FrameWidget{parent} {
-    setTitleBarStyle(TitleBarStyle::MultiLine);
-
-    _actionBar = addChild<ActionBarWidget>();
+    setFrameStyle(FrameStyle::Window);
 
     _list = addChild<ListWidget>();
-    _list->addLayoutConstraint({LayoutAttribute::Left, this, LayoutAttribute::Left, 1});
-    _list->addLayoutConstraint({LayoutAttribute::Right, this, LayoutAttribute::Right, -1});
-    _list->addLayoutConstraint({LayoutAttribute::Top, this, LayoutAttribute::Top, 3});
-    _list->addLayoutConstraint({LayoutAttribute::Bottom, _actionBar, LayoutAttribute::Top});
+    _list->addLayoutConstraint({LayoutAttr::Left, this, LayoutAttr::Left, 1});
+    _list->addLayoutConstraint({LayoutAttr::Right, this, LayoutAttr::Right, -1});
+    _list->addLayoutConstraint({LayoutAttr::Top, this, LayoutAttr::Top, 3});
+    _list->addLayoutConstraint({LayoutAttr::Bottom, actionBar(), LayoutAttr::Top});
 }
 
 auto ListView::setFlags(ListViewFlag flags) -> void {
     clearActions();
 
     if ((flags & ListViewFlag::Editable) != ListViewFlag::None) {
-        addAction(Key::CtrlN, "Add", [this](auto) {
+        addAction(Key::CtrlN, L"Add", [this](auto) {
             if (_addCallback) {
                 _addCallback(this, _list->selectedRow() + 1);
             }
             clear();
         });
-        addAction(Key::Delete, "Remove", [this](auto) {
+        addAction(Key::Delete, L"Remove", [this](auto) {
             if (_removeCallback) {
                 _removeCallback(this, _list->selectedRow());
             }
@@ -43,7 +41,7 @@ auto ListView::setFlags(ListViewFlag flags) -> void {
         });
     }
 
-    _actionBar->displayActions(actions());
+    actionBar()->displayActions(actions());
 }
 
 auto ListView::setOnAdd(ListViewCallback&& fn) -> void {
@@ -56,10 +54,6 @@ auto ListView::setOnRemove(ListViewCallback&& fn) -> void {
 
 auto ListView::list() const -> ListWidget* {
     return _list;
-}
-
-auto ListView::actionBar() const -> ActionBarWidget* {
-    return _actionBar;
 }
 
 }

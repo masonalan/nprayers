@@ -6,7 +6,7 @@
 
 namespace trundle {
 
-Action::Action(trundle::Key key, std::string title, std::function<void(Widget*)>&& callback) :
+Action::Action(trundle::Key key, std::wstring title, std::function<void(Widget*)>&& callback) :
     key{key},
     title{std::move(title)},
     callback{callback} {

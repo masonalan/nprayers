@@ -11,16 +11,16 @@ namespace trundle {
 struct ScrollBarWidget : Widget {
     explicit ScrollBarWidget(Widget* parent = nullptr);
 
-    auto setContentHeight(unsigned int height) -> void;
-    auto setScrollOffset(unsigned int offset) -> void;
+    auto setContentHeight(int height) -> void;
+    auto setScrollOffset(int offset) -> void;
 
 protected:
-    auto render() const noexcept -> void override;
+    auto render() const -> void override;
     auto willAppear() -> void override;
 
 private:
-    unsigned int _contentHeight{};
-    unsigned int _scrollOffset{0};
+    int _contentHeight{};
+    int _scrollOffset{0};
 };
 
 }

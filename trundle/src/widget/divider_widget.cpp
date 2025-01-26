@@ -13,7 +13,11 @@ auto DividerWidget::setDividerOrientation(DividerOrientation orientation) -> voi
     _orientation = orientation;
 }
 
-auto DividerWidget::render() const noexcept -> void {
+auto DividerWidget::setDividerStyle(DividerStyle style) -> void {
+    _style = style;
+}
+
+auto DividerWidget::render() const -> void {
     if (focused()) {
         Trundle::setColorPair(Trundle::focusColorPair());
     }
@@ -31,13 +35,13 @@ auto DividerWidget::render() const noexcept -> void {
         break;
     }
     case DividerOrientation::Horizontal:
-        Trundle::moveCursor({pos().x + 1, pos().y});
-        Trundle::print(Unicode::LineVertRight);
+        Trundle::moveCursor({pos().x, pos().y});
+        Trundle::print(_style == DividerStyle::SingleLine ? Unicode::LineVertRight : Unicode::LineVertRightDouble);
         const auto width = size().x;
-        for (auto col = 1; col < width - 3; ++col) {
-            Trundle::print(Unicode::LineHoriz);
+        for (auto col = 1; col < width - 1; ++col) {
+            Trundle::print(_style == DividerStyle::SingleLine ? Unicode::LineHoriz : Unicode::LineHorizDouble);
         }
-        Trundle::print(Unicode::LineVertLeft);
+        Trundle::print(_style == DividerStyle::SingleLine ? Unicode::LineVertLeft : Unicode::LineVertLeftDouble);
         break;
     }
     if (focused()) {

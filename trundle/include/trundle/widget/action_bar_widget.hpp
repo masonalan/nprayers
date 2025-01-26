@@ -22,7 +22,7 @@ struct ActionBarWidget : Widget {
     [[nodiscard]] auto cols() const -> int;
 
 protected:
-    auto render() const noexcept -> void override;
+    auto render() const -> void override;
     auto focusChanged() -> void override;
 
 private:

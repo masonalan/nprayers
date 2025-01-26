@@ -16,27 +16,27 @@ using ConstantValueCallback = std::function<double(Widget*)>;
 using ConstantValueWidgetCallback = std::function<double(Widget*, Widget*, double)>;
 
 struct LayoutConstraint {
-    LayoutConstraint(LayoutAttribute yAttr,
+    LayoutConstraint(LayoutAttr yAttr,
                      Widget* xAttr,
-                     LayoutAttribute xAtr,
+                     LayoutAttr xAtr,
                      double constant = 0.0,
                      double multiplier = 1.0);
 
-    LayoutConstraint(LayoutAttribute yAttr,
+    LayoutConstraint(LayoutAttr yAttr,
                      Widget* xAttr,
-                     LayoutAttribute xAtr,
+                     LayoutAttr xAtr,
                      ConstantValueWidgetCallback fn,
                      double multiplier = 1.0);
 
-    LayoutConstraint(LayoutAttribute yAttr,
+    LayoutConstraint(LayoutAttr yAttr,
                      double constant);
 
-    LayoutConstraint(LayoutAttribute yAttr,
+    LayoutConstraint(LayoutAttr yAttr,
                      ConstantValueCallback constantFn);
 
     Widget* xWidget{};
-    LayoutAttribute xAttr;
-    LayoutAttribute yAttr;
+    LayoutAttr xAttr;
+    LayoutAttr yAttr;
     double multiplier{};
     double constant{};
     ConstantValueCallback constantFn;

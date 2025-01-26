@@ -13,10 +13,10 @@ auto TextAreaWidget::setText(const std::string& text) -> void {
     _text = text;
 }
 
-auto TextAreaWidget::render() const noexcept -> void {
+auto TextAreaWidget::render() const -> void {
     auto row = 0;
     auto col = 0;
-    auto buffer = std::string{};
+    auto buffer = std::wstring{};
     for (const auto& ch : _text) {
         if (ch == ' ') {
             if (col + buffer.size() >= size().x) {
